@@ -1,0 +1,9 @@
+# Copyright (c) 2024 CATIE
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+    Bosch Sensortec GmbH BNO055 9-axis absolute orientation sensor
+
+compatible: "bosch,bno055"
+
+include: [sensor-device.yaml]

@@ -1,0 +1,9 @@
+# Copyright (c) 2024 CATIE
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig BNO055
+    bool "Bosch Sensortec GmbH BNO055 9-axis absolute orientation sensor"
+    default y
+    depends on DT_HAS_BOSCH_BNO055_ENABLED
+    help
+      Enable driver for Bosch Sensortec GmbH BNO055 9-axis absolute orientation sensor.
