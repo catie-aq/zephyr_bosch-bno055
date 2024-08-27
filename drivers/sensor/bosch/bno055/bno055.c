@@ -18,6 +18,9 @@ struct bno055_config {
 };
 
 struct bno055_data {
+	uint8_t current_page;
+	enum OperatingMode mode;
+	struct unit_config units;
 };
 
 static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
@@ -54,6 +57,56 @@ static int bno055_init(const struct device *dev)
 	if (!i2c_is_ready_dt(&config->i2c_bus)) {
 		LOG_ERR("I2C bus not ready!!");
 		return -ENODEV;
+	}
+	int err;
+
+	/* Switch to Page 0 */
+	err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, PAGE_ZERO);
+	if (err < 0) {
+		return err;
+	}
+	data->current_page = 0;
+	
+	/* Send Reset Command */
+	err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_SYS_TRIGGER, BNO055_COMMAND_RESET);
+	if (err < 0) {
+		return err;
+	}
+	data->mode = CONFIG_MODE;
+	k_sleep(K_MSEC(BNO055_TIMING_RESET_CONFIG));
+
+	/* Check for chip id to validate the power on of the sensor */
+	uint8_t chip_id[1];
+	err = i2c_burst_read_dt(&config->i2c_bus, BNO055_REGISTER_CHIP_ID, chip_id, sizeof(chip_id));
+	if (err < 0) {
+		return err;
+	}
+	if (chip_id[0] != BNO055_CHIP_ID) {
+		LOG_WRN("BNO055 Not Ready yet!!");
+		k_sleep(K_MSEC(BNO055_TIMING_RESET_CONFIG));
+		err = i2c_burst_read_dt(&config->i2c_bus, BNO055_REGISTER_CHIP_ID, chip_id, sizeof(chip_id));
+		if (err < 0) {
+			return err;
+		}
+		if (chip_id[0] != BNO055_CHIP_ID) {
+            return -1;
+        }
+	}
+
+	/* Configure Unit according to Zephyr */
+	data->units.orientation = WINDOWS;
+	data->units.temp = CELSIUS;
+	data->units.euler = RADIANS;
+	data->units.rotation = RPS;
+	data->units.acceleration = MS_2;
+	uint8_t selection = (data->units.orientation << 7)	|
+						(data->units.temp << 4)			|
+						(data->units.euler << 2)		|
+						(data->units.rotation << 1)		|
+						(data->units.acceleration << 0);
+	err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_UNIT_SELECT, selection);
+	if (err < 0) {
+		return err;
 	}
 
 	return 0;

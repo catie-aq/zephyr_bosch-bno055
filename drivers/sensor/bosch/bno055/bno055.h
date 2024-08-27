@@ -171,6 +171,15 @@
 #define BNO055_REGISTER_GYR_ANY_MOTION_THRESHOLD    0x1E
 #define BNO055_REGISTER_GYR_ANY_MOTION_SET          0x1F
 
+#define BNO055_CHIP_ID 0xA0
+
+/* Command Register */
+#define BNO055_COMMAND_RESET 0x20
+
+/* Timings */
+#define BNO055_TIMING_STARTUP   500 // 400ms
+#define BNO055_TIMING_RESET_CONFIG  800 // 650ms
+
 
 /* BNO055 Configuration */
 enum PageId {
@@ -305,9 +314,9 @@ struct mag_config { // BNO055_REGISTER_MAG_CONFIG
 };
 
 /* Unit Selection Configuration */
-enum Orientation {
-    Windows = 0x00, // clockwise
-    Android = 0x01  // anti-clockwise (trigonometric)
+enum Orientation { // Pitch relative
+    WINDOWS = 0x00, // clockwise
+    ANDROID = 0x01  // anti-clockwise (trigonometric)
 };
 
 enum TemperatureUnit {
@@ -320,15 +329,21 @@ enum EulerUnit {
     RADIANS = 0x01
 };
 
+static const uint8_t EulerConvertion[2] = {16, 900}; // DEGREES | RADIANS
+
 enum RotationUnit {
     DPS = 0x00,
     RPS = 0x01
 };
 
+static const uint8_t RotationConvertion[2] = {16, 900}; // DPS | RPS
+
 enum AccelerationUnit {
     MS_2    = 0x00,
     MG      = 0x01
 };
+
+static const uint8_t AccelerationConvertion[2] = {100, 1}; // MS_2 | MG
 
 struct unit_config {
     enum Orientation        orientation;
