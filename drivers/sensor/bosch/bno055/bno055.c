@@ -67,6 +67,7 @@ static const struct sensor_driver_api bno055_driver_api = {
 
 #define BNO055_INIT(n)                                                                             \
 	static struct bno055_config bno055_config_##n = {                                             \
+		.i2c_bus = I2C_DT_SPEC_INST_GET(n),                                                    \
 	};                                                                                         \
 	static struct bno055_data bno055_data_##n;                                                 \
 	DEVICE_DT_INST_DEFINE(n, bno055_init, NULL, &bno055_data_##n, &bno055_config_##n,          \

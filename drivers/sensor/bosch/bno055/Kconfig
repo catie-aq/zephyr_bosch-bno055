@@ -5,5 +5,6 @@ menuconfig BNO055
     bool "Bosch Sensortec GmbH BNO055 9-axis absolute orientation sensor"
     default y
     depends on DT_HAS_BOSCH_BNO055_ENABLED
+    select I2C
     help
       Enable driver for Bosch Sensortec GmbH BNO055 9-axis absolute orientation sensor.
