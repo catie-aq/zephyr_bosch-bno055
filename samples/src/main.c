@@ -7,9 +7,10 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/sensor.h>
 
+static const struct device *const dev = DEVICE_DT_GET(DT_NODELABEL(bno0550));
+
 int main(void)
 {
-	const struct device *const dev = DEVICE_DT_GET_ANY(bosch_bno055);
 	struct sensor_value value;
 
 	if (!device_is_ready(dev)) {
