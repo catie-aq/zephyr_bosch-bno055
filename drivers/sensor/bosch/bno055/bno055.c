@@ -6,6 +6,7 @@
 #define DT_DRV_COMPAT bosch_bno055
 
 #include <zephyr/drivers/sensor.h>
+#include <zephyr/drivers/i2c.h>
 #include <zephyr/logging/log.h>
 
 #include "bno055.h"
@@ -13,6 +14,7 @@
 LOG_MODULE_REGISTER(BNO055, CONFIG_SENSOR_LOG_LEVEL);
 
 struct bno055_config {
+	struct i2c_dt_spec i2c_bus;
 };
 
 struct bno055_data {
@@ -48,6 +50,11 @@ static int bno055_init(const struct device *dev)
 {
 	const struct bno055_config *config = dev->config;
 	struct bno055_data *data = dev->data;
+
+	if (!i2c_is_ready_dt(&config->i2c_bus)) {
+		LOG_ERR("I2C bus not ready!!");
+		return -ENODEV;
+	}
 
 	return 0;
 }
