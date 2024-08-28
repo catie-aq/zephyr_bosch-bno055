@@ -174,7 +174,8 @@
 #define BNO055_CHIP_ID 0xA0
 
 /* Command Register */
-#define BNO055_COMMAND_RESET 0x20
+#define BNO055_COMMAND_RESET    0x20
+#define BNO055_COMMAND_XTAL     0x80
 
 /* Timings */
 #define BNO055_TIMING_STARTUP   500 // 400ms
@@ -203,11 +204,11 @@ enum OperatingMode {
     ACC_GYRO        = 0x05,
     MAGG_GYRO       = 0x06,
     ACC_MAG_GYRO    = 0x07,
-    IMU             = 0x08,
+    IMU             = 0x08, // Relative orientation from ACC + GYR | Fast calculation (high rate output)
     COMPASS         = 0x09,
-    M4G             = 0x0A,
+    M4G             = 0x0A, // Like IMU but replace GYR by MAG | much less power consumption
     NDOF_FMC_OFF    = 0x0B,
-    NDOF            = 0x0C
+    NDOF            = 0x0C  // Fast MAG calibration ON | slightly higher consumption than NDOF_FMC_OFF
 };
 
 #define FROM_CONFIG_MODE_SWITCHING_TIME 10 // 7 ms
@@ -329,21 +330,21 @@ enum EulerUnit {
     RADIANS = 0x01
 };
 
-static const uint8_t EulerConvertion[2] = {16, 900}; // DEGREES | RADIANS
+static const uint16_t EulerConvertion[2] = {16, 900}; // DEGREES | RADIANS
 
 enum RotationUnit {
     DPS = 0x00,
     RPS = 0x01
 };
 
-static const uint8_t RotationConvertion[2] = {16, 900}; // DPS | RPS
+static const uint16_t RotationConvertion[2] = {16, 900}; // DPS | RPS
 
 enum AccelerationUnit {
     MS_2    = 0x00,
     MG      = 0x01
 };
 
-static const uint8_t AccelerationConvertion[2] = {100, 1}; // MS_2 | MG
+static const uint16_t AccelerationConvertion[2] = {100, 1}; // MS_2 | MG
 
 struct unit_config {
     enum Orientation        orientation;

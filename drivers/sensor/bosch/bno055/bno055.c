@@ -15,6 +15,7 @@ LOG_MODULE_REGISTER(BNO055, CONFIG_SENSOR_LOG_LEVEL);
 
 struct bno055_config {
 	struct i2c_dt_spec i2c_bus;
+	uint8_t use_xtal;
 };
 
 struct bno055_data {
@@ -58,6 +59,9 @@ static int bno055_init(const struct device *dev)
 		LOG_ERR("I2C bus not ready!!");
 		return -ENODEV;
 	}
+
+	LOG_INF("CONFIG");
+	LOG_INF("USE XTAL [%d]", config->use_xtal);
 	int err;
 
 	/* Switch to Page 0 */
@@ -67,7 +71,7 @@ static int bno055_init(const struct device *dev)
 	}
 	data->current_page = 0;
 	
-	/* Send Reset Command */
+	/* Send Reset Command */ // GOOD IDEA??
 	err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_SYS_TRIGGER, BNO055_COMMAND_RESET);
 	if (err < 0) {
 		return err;
@@ -109,6 +113,15 @@ static int bno055_init(const struct device *dev)
 		return err;
 	}
 
+	if (config->use_xtal) {
+		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_SYS_TRIGGER, BNO055_COMMAND_XTAL);
+		if (err < 0) {
+			return err;
+		}
+	}
+
+	// /!\ To DO: Check BIST result of Power on Self Test
+
 	return 0;
 }
 
@@ -121,6 +134,7 @@ static const struct sensor_driver_api bno055_driver_api = {
 #define BNO055_INIT(n)                                                                             \
 	static struct bno055_config bno055_config_##n = {                                             \
 		.i2c_bus = I2C_DT_SPEC_INST_GET(n),                                                    \
+		.use_xtal = DT_INST_PROP(n, use_xtal),                                                    \
 	};                                                                                         \
 	static struct bno055_data bno055_data_##n;                                                 \
 	DEVICE_DT_INST_DEFINE(n, bno055_init, NULL, &bno055_data_##n, &bno055_config_##n,          \

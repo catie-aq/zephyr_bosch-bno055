@@ -8,3 +8,13 @@ compatible: "bosch,bno055"
 include:
   - name: sensor-device.yaml
   - name: i2c-device.yaml
+
+properties:
+    use_xtal:
+        type: int
+        default: 0
+        description: |
+            Sensor crystal source.
+        enum:
+        - 1
+        - 0
