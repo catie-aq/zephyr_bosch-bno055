@@ -14,7 +14,7 @@ enum OperatingMode {
     GYRO_ONLY       = 0x03,
     ACC_MAG         = 0x04,
     ACC_GYRO        = 0x05,
-    MAGG_GYRO       = 0x06,
+    MAG_GYRO		= 0x06,
     ACC_MAG_GYRO    = 0x07,
     IMU             = 0x08, // Relative orientation from ACC + GYR | Fast calculation (high rate output)
     COMPASS         = 0x09,

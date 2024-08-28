@@ -24,6 +24,8 @@ struct bno055_data {
 	struct unit_config units;
 
 	struct vector3_data acc;
+	struct vector3_data mag;
+	struct vector3_data gyr;
 };
 
 static int bno055_set_config(const struct device *dev, enum OperatingMode mode)
@@ -68,6 +70,22 @@ static int bno055_set_config(const struct device *dev, enum OperatingMode mode)
 	return 0;
 }
 
+static int bno055_vector3_fetch(const struct device *dev, const uint8_t data_register, struct vector3_data *data)
+{
+	const struct bno055_config *config = dev->config;
+	int8_t regs[6];
+
+	int err = i2c_burst_read_dt(&config->i2c_bus, data_register, regs, sizeof(regs));
+	if (err < 0) {
+		return err;
+	}
+	data->x = (regs[1] << 8) | (0xFF & regs[0]);
+	data->y = (regs[3] << 8) | (0xFF & regs[2]);
+	data->z = (regs[5] << 8) | (0xFF & regs[4]);
+
+	return 0;
+}
+
 static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 			   enum sensor_attribute attr, const struct sensor_value *val)
 {
@@ -109,8 +127,8 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 						if (err < 0) return err;
 						break;
 
-					case MAGG_GYRO:
-						err = bno055_set_config(dev, MAGG_GYRO);
+					case MAG_GYRO:
+						err = bno055_set_config(dev, MAG_GYRO);
 						if (err < 0) return err;
 						break;
 
@@ -173,16 +191,124 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 
 	switch (data->mode)
 	{
+		case CONFIG_MODE:
+			LOG_INF("CONFIG Mode no sample");
+			break;
+
 		case ACC_ONLY:
 			LOG_INF("ACC fetching..");
-			int8_t regs[6];
-			err = i2c_burst_read_dt(&config->i2c_bus, BNO055_REGISTER_ACC_DATA, regs, sizeof(regs));
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_ACC_DATA, &data->acc);
 			if (err < 0) {
 				return err;
 			}
-			data->acc.x = (regs[1] << 8) | (0xFF & regs[0]);
-			data->acc.y = (regs[3] << 8) | (0xFF & regs[2]);
-			data->acc.z = (regs[5] << 8) | (0xFF & regs[4]);
+			break;
+
+		case MAG_ONLY:
+			LOG_INF("MAG fetching..");
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_MAG_DATA, &data->mag);
+			if (err < 0) {
+				return err;
+			}
+			break;
+
+		case GYRO_ONLY:
+			LOG_INF("GYR fetching..");
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_GYR_DATA, &data->gyr);
+			if (err < 0) {
+				return err;
+			}
+			break;
+
+		case ACC_MAG:
+			LOG_INF("ACC_MAG fetching..");
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_ACC_DATA, &data->acc);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_MAG_DATA, &data->mag);
+			if (err < 0) {
+				return err;
+			}
+			break;
+
+		case ACC_GYRO:
+			LOG_INF("ACC_GYRO fetching..");
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_ACC_DATA, &data->acc);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_GYR_DATA, &data->gyr);
+			if (err < 0) {
+				return err;
+			}
+			break;
+
+		case MAG_GYRO:
+			LOG_INF("MAG_GYRO fetching..");
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_MAG_DATA, &data->mag);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_GYR_DATA, &data->gyr);
+			if (err < 0) {
+				return err;
+			}
+			break;
+
+		case ACC_MAG_GYRO:
+			LOG_INF("ACC_MAG_GYRO fetching..");
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_ACC_DATA, &data->acc);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_MAG_DATA, &data->mag);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_GYR_DATA, &data->gyr);
+			if (err < 0) {
+				return err;
+			}
+			break;
+
+		case IMU:
+			LOG_INF("MAG fetching..");
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_MAG_DATA, &data->mag);
+			if (err < 0) {
+				return err;
+			}
+			break;
+
+		case COMPASS:
+			LOG_INF("MAG fetching..");
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_MAG_DATA, &data->mag);
+			if (err < 0) {
+				return err;
+			}
+			break;
+
+		case M4G:
+			LOG_INF("MAG fetching..");
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_MAG_DATA, &data->mag);
+			if (err < 0) {
+				return err;
+			}
+			break;
+
+		case NDOF_FMC_OFF:
+			LOG_INF("MAG fetching..");
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_MAG_DATA, &data->mag);
+			if (err < 0) {
+				return err;
+			}
+			break;
+
+		case NDOF:
+			LOG_INF("MAG fetching..");
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_MAG_DATA, &data->mag);
+			if (err < 0) {
+				return err;
+			}
 			break;
 		
 		default:
