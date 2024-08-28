@@ -26,11 +26,51 @@ struct bno055_data {
 	struct vector3_data acc;
 };
 
+static int bno055_set_config(const struct device *dev, enum OperatingMode mode)
+{
+	struct bno055_data *data = dev->data;
+	if (data->mode == mode) {
+		return 0;
+	}
+
+	const struct bno055_config *config = dev->config;
+	int err;
+
+	/* Switch to Page 0 */
+	if (data->current_page != PAGE_ZERO) {
+		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, PAGE_ZERO);
+		if (err < 0) {
+			return err;
+		}
+		data->current_page = PAGE_ZERO;
+	}
+
+	if (data->mode != CONFIG_MODE) {
+		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_OPERATION_MODE, CONFIG_MODE);
+		if (err < 0) {
+			return err;
+		}
+		k_sleep(K_MSEC(BNO055_TIMING_SWITCH_FROM_ANY));
+	}
+
+	if (mode == CONFIG_MODE) {
+		data->mode = mode;
+		return 0;
+	}
+
+	err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_OPERATION_MODE, mode);
+	if (err < 0) {
+		return err;
+	}
+	k_sleep(K_MSEC(BNO055_TIMING_SWITCH_FROM_CONFIG));
+
+	data->mode = mode;
+	return 0;
+}
+
 static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 			   enum sensor_attribute attr, const struct sensor_value *val)
 {
-	struct bno055_data *data = dev->data;
-	const struct bno055_config *config = dev->config;
 	int err;
 
 	switch (chan)
@@ -39,33 +79,73 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 			if (attr == SENSOR_ATTR_CONFIGURATION) {
 				switch (val->val1)
 				{
-					case ACC_ONLY:
-						/* Switch to Page 0 */
-						if (data->current_page != PAGE_ZERO) {
-							err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, PAGE_ZERO);
-							if (err < 0) {
-								return err;
-							}
-							data->current_page = PAGE_ZERO;
-						}
+					case CONFIG_MODE:
+						err = bno055_set_config(dev, CONFIG_MODE);
+						if (err < 0) return err;
+						break;
 
-						if (data->mode != CONFIG_MODE) {
-							err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_OPERATION_MODE, CONFIG_MODE);
-							if (err < 0) {
-								return err;
-							}
-							k_sleep(K_MSEC(BNO055_TIMING_SWITCH_FROM_ANY));
-						}
-						err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_OPERATION_MODE, ACC_ONLY);
-						if (err < 0) {
-							return err;
-						}
-						k_sleep(K_MSEC(BNO055_TIMING_SWITCH_FROM_CONFIG));
-						data->mode = ACC_ONLY;
+					case ACC_ONLY:
+						err = bno055_set_config(dev, ACC_ONLY);
+						if (err < 0) return err;
+						break;
+
+					case MAG_ONLY:
+						err = bno055_set_config(dev, MAG_ONLY);
+						if (err < 0) return err;
+						break;
+					
+					case GYRO_ONLY:
+						err = bno055_set_config(dev, GYRO_ONLY);
+						if (err < 0) return err;
+						break;
+
+					case ACC_MAG:
+						err = bno055_set_config(dev, ACC_MAG);
+						if (err < 0) return err;
+						break;
+
+					case ACC_GYRO:
+						err = bno055_set_config(dev, ACC_GYRO);
+						if (err < 0) return err;
+						break;
+
+					case MAGG_GYRO:
+						err = bno055_set_config(dev, MAGG_GYRO);
+						if (err < 0) return err;
+						break;
+
+					case ACC_MAG_GYRO:
+						err = bno055_set_config(dev, ACC_MAG_GYRO);
+						if (err < 0) return err;
+						break;
+
+					case IMU:
+						err = bno055_set_config(dev, IMU);
+						if (err < 0) return err;
+						break;
+
+					case COMPASS:
+						err = bno055_set_config(dev, COMPASS);
+						if (err < 0) return err;
+						break;
+
+					case M4G:
+						err = bno055_set_config(dev, M4G);
+						if (err < 0) return err;
+						break;
+
+					case NDOF_FMC_OFF:
+						err = bno055_set_config(dev, NDOF_FMC_OFF);
+						if (err < 0) return err;
+						break;
+
+					case NDOF:
+						err = bno055_set_config(dev, NDOF);
+						if (err < 0) return err;
 						break;
 					
 					default:
-						break;
+						return -ENOTSUP;
 				}
 			}
 			break;
