@@ -100,9 +100,9 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 			if (err < 0) {
 				return err;
 			}
-			data->acc.x = (regs[1] << 8) | regs[0];
-			data->acc.y = (regs[3] << 8) | regs[2];
-			data->acc.z = (regs[5] << 8) | regs[4];
+			data->acc.x = (regs[1] << 8) | (0xFF & regs[0]);
+			data->acc.y = (regs[3] << 8) | (0xFF & regs[2]);
+			data->acc.z = (regs[5] << 8) | (0xFF & regs[4]);
 			break;
 		
 		default:
