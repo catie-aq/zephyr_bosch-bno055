@@ -94,7 +94,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 	switch (data->mode)
 	{
 		case ACC_ONLY:
-			LOG_WRN("ACC fetching..");
+			LOG_INF("ACC fetching..");
 			int8_t regs[6];
 			err = i2c_burst_read_dt(&config->i2c_bus, BNO055_REGISTER_ACC_DATA, regs, sizeof(regs));
 			if (err < 0) {
@@ -133,6 +133,15 @@ static int bno055_channel_get(const struct device *dev, enum sensor_channel chan
 		case SENSOR_CHAN_ACCEL_Z:
 			val->val1 = data->acc.z;
 			val->val2 = 0;
+			break;
+
+		case SENSOR_CHAN_ACCEL_XYZ:
+			(val)->val1 = data->acc.x;
+			(val)->val2 = 0;
+			(val+1)->val1 = data->acc.y;
+			(val+1)->val2 = 0;
+			(val+2)->val1 = data->acc.z;
+			(val+2)->val2 = 0;
 			break;
 		
 		default:

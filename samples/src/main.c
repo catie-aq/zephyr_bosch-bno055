@@ -27,7 +27,7 @@ static const struct device *const dev = DEVICE_DT_GET(DT_NODELABEL(bno0550));
 
 int main(void)
 {
-	struct sensor_value value;
+	struct sensor_value value[3];
 
 	if (!device_is_ready(dev)) {
 		printk("Device %s is not ready\n", dev->name);
@@ -44,8 +44,11 @@ int main(void)
 		sensor_sample_fetch(dev);
 
 		// Example for ambiant temperature sensor
-		sensor_channel_get(dev, SENSOR_CHAN_ACCEL_Z, &value);
-		printk("Z: %d.%06d\n", value.val1, value.val2);
+		sensor_channel_get(dev, SENSOR_CHAN_ACCEL_XYZ, value);
+		printk("X: %d.%06d Y: %d.%06d Z: %d.%06d\n",
+				value[0].val1, value[0].val2,
+				value[1].val1, value[1].val2,
+				value[2].val1, value[2].val2);
 
 		k_sleep(K_MSEC(100));
 	}
