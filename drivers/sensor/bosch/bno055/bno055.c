@@ -107,10 +107,10 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 		
 		default:
 			LOG_WRN("BNO055 Not in Computation Mode!!");
-			break;
+			return -EINVAL;
 	}
 
-	return 0;
+	return -ENOTSUP;
 }
 
 static int bno055_channel_get(const struct device *dev, enum sensor_channel chan,
@@ -145,10 +145,10 @@ static int bno055_channel_get(const struct device *dev, enum sensor_channel chan
 			break;
 		
 		default:
-			break;
+			return -EINVAL;
 	}
 
-	return 0;
+	return -ENOTSUP;
 }
 
 static int bno055_init(const struct device *dev)
@@ -196,7 +196,7 @@ static int bno055_init(const struct device *dev)
 			return err;
 		}
 		if (chip_id[0] != BNO055_CHIP_ID) {
-            return -1;
+            return -ENODEV;
         }
 	}
 
