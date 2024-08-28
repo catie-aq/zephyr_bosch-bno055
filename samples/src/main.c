@@ -45,7 +45,7 @@ int main(void)
 
 		// Example for ambiant temperature sensor
 		sensor_channel_get(dev, SENSOR_CHAN_ACCEL_XYZ, value);
-		printk("X: %d.%06d Y: %d.%06d Z: %d.%06d\n",
+		printk("X(m.s-2): %d.%06d Y(m.s-2): %d.%06d Z(m.s-2): %d.%06d\n",
 				value[0].val1, value[0].val2,
 				value[1].val1, value[1].val2,
 				value[2].val1, value[2].val2);
