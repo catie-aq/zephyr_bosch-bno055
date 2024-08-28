@@ -22,11 +22,57 @@ struct bno055_data {
 	uint8_t current_page;
 	enum OperatingMode mode;
 	struct unit_config units;
+
+	struct vector3_data acc;
 };
 
 static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 			   enum sensor_attribute attr, const struct sensor_value *val)
 {
+	struct bno055_data *data = dev->data;
+	const struct bno055_config *config = dev->config;
+	int err;
+
+	switch (chan)
+	{
+		case SENSOR_CHAN_ALL:
+			if (attr == SENSOR_ATTR_CONFIGURATION) {
+				switch (val->val1)
+				{
+					case ACC_ONLY:
+						/* Switch to Page 0 */
+						if (data->current_page != PAGE_ZERO) {
+							err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, PAGE_ZERO);
+							if (err < 0) {
+								return err;
+							}
+							data->current_page = PAGE_ZERO;
+						}
+
+						if (data->mode != CONFIG_MODE) {
+							err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_OPERATION_MODE, CONFIG_MODE);
+							if (err < 0) {
+								return err;
+							}
+							k_sleep(K_MSEC(BNO055_TIMING_SWITCH_FROM_ANY));
+						}
+						err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_OPERATION_MODE, ACC_ONLY);
+						if (err < 0) {
+							return err;
+						}
+						k_sleep(K_MSEC(BNO055_TIMING_SWITCH_FROM_CONFIG));
+						data->mode = ACC_ONLY;
+						break;
+					
+					default:
+						break;
+				}
+			}
+			break;
+		
+		default:
+			break;
+	}
 	return 0;
 }
 
@@ -34,6 +80,35 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 {
 	struct bno055_data *data = dev->data;
 	const struct bno055_config *config = dev->config;
+	int err;
+
+	/* Switch to Page 0 */
+	if (data->current_page != PAGE_ZERO) {
+		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, PAGE_ZERO);
+		if (err < 0) {
+			return err;
+		}
+		data->current_page = PAGE_ZERO;
+	}
+
+	switch (data->mode)
+	{
+		case ACC_ONLY:
+			LOG_WRN("ACC fetching..");
+			int8_t regs[6];
+			err = i2c_burst_read_dt(&config->i2c_bus, BNO055_REGISTER_ACC_DATA, regs, sizeof(regs));
+			if (err < 0) {
+				return err;
+			}
+			data->acc.x = (regs[1] << 8) | regs[0];
+			data->acc.y = (regs[3] << 8) | regs[2];
+			data->acc.z = (regs[5] << 8) | regs[4];
+			break;
+		
+		default:
+			LOG_WRN("BNO055 Not in Computation Mode!!");
+			break;
+	}
 
 	return 0;
 }
@@ -43,9 +118,26 @@ static int bno055_channel_get(const struct device *dev, enum sensor_channel chan
 {
 	struct bno055_data *data = dev->data;
 
-	// TODO: Update val with the sensor value
-	val->val1 = 0;
-	val->val2 = 0;
+	switch (chan)
+	{
+		case SENSOR_CHAN_ACCEL_X:
+			val->val1 = data->acc.x;
+			val->val2 = 0;
+			break;
+
+		case SENSOR_CHAN_ACCEL_Y:
+			val->val1 = data->acc.y;
+			val->val2 = 0;
+			break;
+
+		case SENSOR_CHAN_ACCEL_Z:
+			val->val1 = data->acc.z;
+			val->val2 = 0;
+			break;
+		
+		default:
+			break;
+	}
 
 	return 0;
 }
@@ -69,7 +161,7 @@ static int bno055_init(const struct device *dev)
 	if (err < 0) {
 		return err;
 	}
-	data->current_page = 0;
+	data->current_page = PAGE_ZERO;
 	
 	/* Send Reset Command */ // GOOD IDEA??
 	err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_SYS_TRIGGER, BNO055_COMMAND_RESET);
@@ -85,6 +177,8 @@ static int bno055_init(const struct device *dev)
 	if (err < 0) {
 		return err;
 	}
+	LOG_INF("CHIP ID [%d]", chip_id[0]);
+
 	if (chip_id[0] != BNO055_CHIP_ID) {
 		LOG_WRN("BNO055 Not Ready yet!!");
 		k_sleep(K_MSEC(BNO055_TIMING_RESET_CONFIG));

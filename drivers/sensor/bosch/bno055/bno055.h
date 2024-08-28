@@ -28,6 +28,10 @@
 #define BNO055_REGISTER_ACC_DATA_Y_MSB	0x0B
 #define BNO055_REGISTER_ACC_DATA_Z_LSB	0x0C
 #define BNO055_REGISTER_ACC_DATA_Z_MSB	0x0D
+#define BNO055_REGISTER_ACC_DATA_X      BNO055_REGISTER_ACC_DATA_X_LSB
+#define BNO055_REGISTER_ACC_DATA_Y      BNO055_REGISTER_ACC_DATA_Y_LSB
+#define BNO055_REGISTER_ACC_DATA_Z      BNO055_REGISTER_ACC_DATA_Z_LSB
+#define BNO055_REGISTER_ACC_DATA        BNO055_REGISTER_ACC_DATA_X
 
 // Magnetometer Registers
 #define BNO055_REGISTER_MAG_DATA_X_LSB	0x0E
@@ -178,8 +182,10 @@
 #define BNO055_COMMAND_XTAL     0x80
 
 /* Timings */
-#define BNO055_TIMING_STARTUP   500 // 400ms
-#define BNO055_TIMING_RESET_CONFIG  800 // 650ms
+#define BNO055_TIMING_STARTUP               500 // 400ms
+#define BNO055_TIMING_RESET_CONFIG          800 // 650ms
+#define BNO055_TIMING_SWITCH_FROM_CONFIG    10 // 7 ms
+#define BNO055_TIMING_SWITCH_FROM_ANY       20 // 19 ms
 
 
 /* BNO055 Configuration */
@@ -210,9 +216,6 @@ enum OperatingMode {
     NDOF_FMC_OFF    = 0x0B,
     NDOF            = 0x0C  // Fast MAG calibration ON | slightly higher consumption than NDOF_FMC_OFF
 };
-
-#define FROM_CONFIG_MODE_SWITCHING_TIME 10 // 7 ms
-#define FROM_ANY_MODE_SWITCHING_TIME 20 // 19 ms
 
 /* Accelerometer Configuration */
 enum ACC_GRange {
