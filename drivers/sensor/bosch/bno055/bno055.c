@@ -26,6 +26,13 @@ struct bno055_data {
 	struct vector3_data acc;
 	struct vector3_data mag;
 	struct vector3_data gyr;
+
+	struct vector3_data eul;
+	struct vector4_data qua;
+	struct vector3_data lia;
+	struct vector3_data grv;
+
+	struct calib_data calib;
 };
 
 static int bno055_set_config(const struct device *dev, enum OperatingMode mode)
@@ -82,6 +89,40 @@ static int bno055_vector3_fetch(const struct device *dev, const uint8_t data_reg
 	data->x = (regs[1] << 8) | (0xFF & regs[0]);
 	data->y = (regs[3] << 8) | (0xFF & regs[2]);
 	data->z = (regs[5] << 8) | (0xFF & regs[4]);
+
+	return 0;
+}
+
+static int bno055_vector4_fetch(const struct device *dev, const uint8_t data_register, struct vector4_data *data)
+{
+	const struct bno055_config *config = dev->config;
+	int8_t regs[8];
+
+	int err = i2c_burst_read_dt(&config->i2c_bus, data_register, regs, sizeof(regs));
+	if (err < 0) {
+		return err;
+	}
+	data->w = (regs[1] << 8) | (0xFF & regs[0]);
+	data->x = (regs[3] << 8) | (0xFF & regs[2]);
+	data->y = (regs[5] << 8) | (0xFF & regs[4]);
+	data->z = (regs[7] << 8) | (0xFF & regs[6]);
+
+	return 0;
+}
+
+static int bno055_calibration_fetch(const struct device *dev, struct calib_data *data)
+{
+	const struct bno055_config *config = dev->config;
+	int8_t regs[1];
+
+	int err = i2c_burst_read_dt(&config->i2c_bus, BNO055_REGISTER_CALIBRATION_STATUS, regs, sizeof(regs));
+	if (err < 0) {
+		return err;
+	}
+	data->sys = (regs[0] >> 6) & 0x03;
+	data->gyr = (regs[0] >> 4) & 0x03;
+	data->acc = (regs[0] >> 2) & 0x03;
+	data->mag = (regs[0] >> 0) & 0x03;
 
 	return 0;
 }
@@ -272,40 +313,120 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 			break;
 
 		case IMU:
-			LOG_INF("MAG fetching..");
-			err = bno055_vector3_fetch(dev, BNO055_REGISTER_MAG_DATA, &data->mag);
+			LOG_INF("IMU fetching..");
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_EUL_DATA, &data->eul);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_vector4_fetch(dev, BNO055_REGISTER_QUA_DATA, &data->qua);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_LIA_DATA, &data->lia);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_GRV_DATA, &data->grv);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_calibration_fetch(dev, &data->calib);
 			if (err < 0) {
 				return err;
 			}
 			break;
 
 		case COMPASS:
-			LOG_INF("MAG fetching..");
-			err = bno055_vector3_fetch(dev, BNO055_REGISTER_MAG_DATA, &data->mag);
+			LOG_INF("COMPASS fetching..");
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_EUL_DATA, &data->eul);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_vector4_fetch(dev, BNO055_REGISTER_QUA_DATA, &data->qua);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_LIA_DATA, &data->lia);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_GRV_DATA, &data->grv);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_calibration_fetch(dev, &data->calib);
 			if (err < 0) {
 				return err;
 			}
 			break;
 
 		case M4G:
-			LOG_INF("MAG fetching..");
-			err = bno055_vector3_fetch(dev, BNO055_REGISTER_MAG_DATA, &data->mag);
+			LOG_INF("M4G fetching..");
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_EUL_DATA, &data->eul);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_vector4_fetch(dev, BNO055_REGISTER_QUA_DATA, &data->qua);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_LIA_DATA, &data->lia);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_GRV_DATA, &data->grv);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_calibration_fetch(dev, &data->calib);
 			if (err < 0) {
 				return err;
 			}
 			break;
 
 		case NDOF_FMC_OFF:
-			LOG_INF("MAG fetching..");
-			err = bno055_vector3_fetch(dev, BNO055_REGISTER_MAG_DATA, &data->mag);
+			LOG_INF("NDOF_FMC_OFF fetching..");
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_EUL_DATA, &data->eul);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_vector4_fetch(dev, BNO055_REGISTER_QUA_DATA, &data->qua);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_LIA_DATA, &data->lia);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_GRV_DATA, &data->grv);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_calibration_fetch(dev, &data->calib);
 			if (err < 0) {
 				return err;
 			}
 			break;
 
 		case NDOF:
-			LOG_INF("MAG fetching..");
-			err = bno055_vector3_fetch(dev, BNO055_REGISTER_MAG_DATA, &data->mag);
+			LOG_INF("NDOF fetching..");
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_EUL_DATA, &data->eul);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_vector4_fetch(dev, BNO055_REGISTER_QUA_DATA, &data->qua);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_LIA_DATA, &data->lia);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_vector3_fetch(dev, BNO055_REGISTER_GRV_DATA, &data->grv);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_calibration_fetch(dev, &data->calib);
 			if (err < 0) {
 				return err;
 			}
