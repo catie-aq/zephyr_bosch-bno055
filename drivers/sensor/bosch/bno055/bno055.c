@@ -121,18 +121,18 @@ static int bno055_channel_get(const struct device *dev, enum sensor_channel chan
 	switch (chan)
 	{
 		case SENSOR_CHAN_ACCEL_X:
-			val->val1 = data->acc.x;
-			val->val2 = 0;
+			(val)->val1 = data->acc.x / AccelerationConvertion[data->units.acceleration];
+			(val)->val2 = (1000000 / AccelerationConvertion[data->units.acceleration]) * (data->acc.x - (val)->val1 * AccelerationConvertion[data->units.acceleration]);
 			break;
 
 		case SENSOR_CHAN_ACCEL_Y:
-			val->val1 = data->acc.y;
-			val->val2 = 0;
+			(val)->val1 = data->acc.y / AccelerationConvertion[data->units.acceleration];
+			(val)->val2 = (1000000 / AccelerationConvertion[data->units.acceleration]) * (data->acc.y - (val)->val1 * AccelerationConvertion[data->units.acceleration]);
 			break;
 
 		case SENSOR_CHAN_ACCEL_Z:
-			val->val1 = data->acc.z;
-			val->val2 = 0;
+			(val)->val1 = data->acc.z / AccelerationConvertion[data->units.acceleration];
+			(val)->val2 = (1000000 / AccelerationConvertion[data->units.acceleration]) * (data->acc.z - (val)->val1 * AccelerationConvertion[data->units.acceleration]);
 			break;
 
 		case SENSOR_CHAN_ACCEL_XYZ:
