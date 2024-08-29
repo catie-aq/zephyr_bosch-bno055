@@ -245,7 +245,6 @@ enum bno055_sensor_channel {
 #define BNO055_TIMING_SWITCH_FROM_CONFIG    10 // 7 ms
 #define BNO055_TIMING_SWITCH_FROM_ANY       20 // 19 ms
 
-
 /* BNO055 Configuration */
 enum PageId {
     PAGE_ZERO    = 0x00,
@@ -276,113 +275,215 @@ enum OperatingMode {
 };
 
 /* Accelerometer Configuration */
-enum ACC_GRange {
-    ACC_2G  = 0x00,
-    ACC_4G  = 0x01,
-    ACC_8G  = 0x02,
-    ACC_16G = 0x03
-};
+#define BNO055_ACC_2G   0x00
+#define BNO055_ACC_4G   0x01
+#define BNO055_ACC_8G   0x02
+#define BNO055_ACC_16G  0x03
 
-enum ACC_Bandwidth {
-    ACC_8Hz     = 0x00,
-    ACC_16Hz    = 0x01,
-    ACC_31Hz    = 0x02,
-    ACC_62Hz    = 0x03,
-    ACC_125Hz   = 0x04,
-    ACC_250Hz   = 0x05,
-    ACC_500Hz   = 0x06,
-    ACC_1000Hz  = 0x07
-};
+#define BNO055_ACC_8Hz      0x00
+#define BNO055_ACC_16Hz     0x01
+#define BNO055_ACC_31Hz     0x02
+#define BNO055_ACC_62Hz     0x03
+#define BNO055_ACC_125Hz    0x04
+#define BNO055_ACC_250Hz    0x05
+#define BNO055_ACC_500Hz    0x06
+#define BNO055_ACC_1000Hz   0x07
 
-enum ACC_PowerMode {
-    ACC_NORMAL          = 0x00,
-    ACC_SUSPEND         = 0x01,
-    ACC_LOW_POWER_1     = 0x02,
-    ACC_STANDBY         = 0x03,
-    ACC_LOW_POWER_2     = 0x04,
-    ACC_DEEP_SUSPEND    = 0x05
-};
-
-struct acc_config { // BNO055_REGISTER_ACC_CONFIG
-    enum ACC_GRange     range;
-    enum ACC_Bandwidth  bandwidth;
-    enum ACC_PowerMode  power;
-};
+#define BNO055_ACC_NORMAL       0x00
+#define BNO055_ACC_SUSPEND      0x01
+#define BNO055_ACC_LOW_POWER_1  0x02
+#define BNO055_ACC_STANDBY      0x03
+#define BNO055_ACC_LOW_POWER_2  0x04
+#define BNO055_ACC_DEEP_SUSPEND 0x05
 
 /* Magnetometer Configuration */
-enum MAG_Rate {
-    MAG_2Hz     = 0x00,
-    MAG_6Hz     = 0x01,
-    MAG_8Hz     = 0x02,
-    MAG_10Hz    = 0x03,
-    MAG_15Hz    = 0x04,
-    MAG_20Hz    = 0x05,
-    MAG_25Hz    = 0x06,
-    MAG_30Hz    = 0x07
-};
+#define BNO055_MAG_2Hz  0x00
+#define BNO055_MAG_6Hz  0x01
+#define BNO055_MAG_8Hz  0x02
+#define BNO055_MAG_10Hz 0x03
+#define BNO055_MAG_15Hz 0x04
+#define BNO055_MAG_20Hz 0x05
+#define BNO055_MAG_25Hz 0x06
+#define BNO055_MAG_30Hz 0x07
 
-enum MAG_OperatingMode {
-    MAG_LOW_POWER           = 0x00,
-    MAG_REGULAR             = 0x01,
-    MAG_ENHANCED_REGULAR    = 0x02,
-    MAG_HIGH_ACCURACY       = 0x03
-};
+#define BNO055_MAG_LOW_POWER        0x00
+#define BNO055_MAG_REGULAR          0x01
+#define BNO055_MAG_ENHANCED_REGULAR 0x02
+#define BNO055_MAG_HIGH_ACCURACY    0x03
 
-enum MAG_PowerMode {
-    MAG_NORMAL      = 0x00,
-    MAG_SLEEP       = 0x01,
-    MAG_SUSPEND     = 0x02,
-    MAG_FORCE_MODE  = 0x03
-};
-
-struct mag_config { // BNO055_REGISTER_MAG_CONFIG
-    enum MAG_Rate           rate;
-    enum MAG_OperatingMode  mode;
-    enum MAG_PowerMode      power;
-};
+#define BNO055_MAG_NORMAL       0x00
+#define BNO055_MAG_SLEEP        0x01
+#define BNO055_MAG_SUSPEND      0x02
+#define BNO055_MAG_FORCE_MODE   0x03
 
 #define BNO055_UTESLA_TO_GAUSS 100
 static const uint16_t uTeslaResolution = 16;
 
 /* Gyroscope Configuration */
-enum GYR_GRange {
-    GYR_2000DPS = 0x00,
-    GYR_1000DPS = 0x01,
-    GYR_500DPS  = 0x02,
-    GYR_250DPS  = 0x03,
-    GYR_125DPS  = 0x04
-};
+#define BNO055_GYR_2000DPS  0x00
+#define BNO055_GYR_1000DPS  0x01
+#define BNO055_GYR_500DPS   0x02
+#define BNO055_GYR_250DPS   0x03
+#define BNO055_GYR_125DPS   0x04
 
-enum GYR_Bandwidth {
-    GYR_523Hz   = 0x00,
-    GYR_230Hz   = 0x01,
-    GYR_116Hz   = 0x02,
-    GYR_47Hz    = 0x03,
-    GYR_23Hz    = 0x04,
-    GYR_12Hz    = 0x05,
-    GYR_64Hz    = 0x06,
-    GYR_32Hz    = 0x07
-};
+#define BNO055_GYR_523Hz    0x00
+#define BNO055_GYR_230Hz    0x01
+#define BNO055_GYR_116Hz    0x02
+#define BNO055_GYR_47Hz     0x03
+#define BNO055_GYR_23Hz     0x04
+#define BNO055_GYR_12Hz     0x05
+#define BNO055_GYR_64Hz     0x06
+#define BNO055_GYR_32Hz     0x07
 
-enum GYR_PowerMode {
-    GYR_NORMAL              = 0x00,
-    GYR_FAST_POWER_UP       = 0x01,
-    GYR_DEEP_SUSPEND        = 0x02,
-    GYR_SUSPEND             = 0x03,
-    GYR_ADVANCED_POWERSAVE  = 0x04
-};
+#define BNO055_GYR_NORMAL               0x00
+#define BNO055_GYR_FAST_POWER_UP        0x01
+#define BNO055_GYR_DEEP_SUSPEND         0x02
+#define BNO055_GYR_SUSPEND              0x03
+#define BNO055_GYR_ADVANCED_POWERSAVE   0x04
 
-struct gyr_config {
-    enum GYR_GRange     range; // BNO055_REGISTER_GYR_CONFIG_0
-    enum GYR_Bandwidth  bandwidth; // BNO055_REGISTER_GYR_CONFIG_0
-    enum GYR_PowerMode  power; // BNO055_REGISTER_GYR_CONFIG_1
-};
+/* Custom Sensors Configuration */
+#if defined(CONFIG_BNO055_ACC_CUSTOM_CONFIG)
+#if defined(CONFIG_BNO055_ACC_2G_RANGE)
+#define BNO055_ACC_RANGE BNO055_ACC_2G
+#elif defined(CONFIG_BNO055_ACC_4G_RANGE)
+#define BNO055_ACC_RANGE BNO055_ACC_4G
+#elif defined(CONFIG_BNO055_ACC_8G_RANGE)
+#define BNO055_ACC_RANGE BNO055_ACC_8G
+#elif defined(CONFIG_BNO055_ACC_16G_RANGE)
+#define BNO055_ACC_RANGE BNO055_ACC_16G
+#endif
 
-struct sensors_config {
-    struct acc_config acc;
-    struct mag_config mag;
-    struct gyr_config gyr;
-};
+#if defined(CONFIG_BNO055_ACC_8HZ_BANDWIDTH)
+#define BNO055_ACC_BANDWIDTH BNO055_ACC_8Hz
+#elif defined(CONFIG_BNO055_ACC_16HZ_BANDWIDTH)
+#define BNO055_ACC_BANDWIDTH BNO055_ACC_16Hz
+#elif defined(CONFIG_BNO055_ACC_31HZ_BANDWIDTH)
+#define BNO055_ACC_BANDWIDTH BNO055_ACC_31Hz
+#elif defined(CONFIG_BNO055_ACC_62HZ_BANDWIDTH)
+#define BNO055_ACC_BANDWIDTH BNO055_ACC_62Hz
+#elif defined(CONFIG_BNO055_ACC_125HZ_BANDWIDTH)
+#define BNO055_ACC_BANDWIDTH BNO055_ACC_125Hz
+#elif defined(CONFIG_BNO055_ACC_250HZ_BANDWIDTH)
+#define BNO055_ACC_BANDWIDTH BNO055_ACC_250Hz
+#elif defined(CONFIG_BNO055_ACC_500HZ_BANDWIDTH)
+#define BNO055_ACC_BANDWIDTH BNO055_ACC_500Hz
+#elif defined(CONFIG_BNO055_ACC_1000HZ_BANDWIDTH)
+#define BNO055_ACC_BANDWIDTH BNO055_ACC_1000Hz
+#endif
+
+#if defined(CONFIG_BNO055_ACC_NORMAL_POWER)
+#define BNO055_ACC_POWER BNO055_ACC_NORMAL
+#elif defined(CONFIG_BNO055_ACC_LOW_1_POWER)
+#define BNO055_ACC_POWER BNO055_ACC_LOW_POWER_1
+#elif defined(CONFIG_BNO055_ACC_LOW_2_POWER)
+#define BNO055_ACC_POWER BNO055_ACC_LOW_POWER_2
+#elif defined(CONFIG_BNO055_ACC_STANDBY_POWER)
+#define BNO055_ACC_POWER BNO055_ACC_STANDBY
+#elif defined(CONFIG_BNO055_ACC_SUSPEND_POWER)
+#define BNO055_ACC_POWER BNO055_ACC_SUSPEND
+#elif defined(CONFIG_BNO055_ACC_DEEP_SUSPEND_POWER)
+#define BNO055_ACC_POWER BNO055_ACC_DEEP_SUSPEND
+#endif
+
+#else
+#define BNO055_ACC_RANGE        BNO055_ACC_4G
+#define BNO055_ACC_BANDWIDTH    BNO055_ACC_62Hz
+#define BNO055_ACC_POWER        BNO055_ACC_NORMAL
+#endif
+
+#if defined(CONFIG_BNO055_MAG_CUSTOM_CONFIG)
+#if defined(CONFIG_BNO055_MAG_2HZ_RATE)
+#define BNO055_MAG_RATE BNO055_MAG_2Hz
+#elif defined(CONFIG_BNO055_MAG_6HZ_RATE)
+#define BNO055_MAG_RATE BNO055_MAG_6Hz
+#elif defined(CONFIG_BNO055_MAG_8HZ_RATE)
+#define BNO055_MAG_RATE BNO055_MAG_8Hz
+#elif defined(CONFIG_BNO055_MAG_10HZ_RATE)
+#define BNO055_MAG_RATE BNO055_MAG_10Hz
+#elif defined(CONFIG_BNO055_MAG_15HZ_RATE)
+#define BNO055_MAG_RATE BNO055_MAG_15Hz
+#elif defined(CONFIG_BNO055_MAG_20HZ_RATE)
+#define BNO055_MAG_RATE BNO055_MAG_20Hz
+#elif defined(CONFIG_BNO055_MAG_25HZ_RATE)
+#define BNO055_MAG_RATE BNO055_MAG_25Hz
+#elif defined(CONFIG_BNO055_MAG_30HZ_RATE)
+#define BNO055_MAG_RATE BNO055_MAG_30Hz
+#endif
+
+#if defined(CONFIG_BNO055_MAG_LOW_POWER_MODE)
+#define BNO055_MAG_MODE BNO055_MAG_LOW_POWER
+#elif defined(CONFIG_BNO055_MAG_REGULAR_MODE)
+#define BNO055_MAG_MODE BNO055_MAG_REGULAR
+#elif defined(CONFIG_BNO055_MAG_ENHANCED_REGULAR_MODE)
+#define BNO055_MAG_MODE BNO055_MAG_ENHANCED_REGULAR
+#elif defined(CONFIG_BNO055_MAG_HIGH_ACCURACY_MODE)
+#define BNO055_MAG_MODE BNO055_MAG_HIGH_ACCURACY
+#endif
+
+#if defined(CONFIG_BNO055_MAG_NORMAL_POWER)
+#define BNO055_MAG_POWER BNO055_MAG_NORMAL
+#elif defined(CONFIG_BNO055_MAG_SUSPEND_POWER)
+#define BNO055_MAG_POWER BNO055_MAG_SUSPEND
+#elif defined(CONFIG_BNO055_MAG_SLEEP_POWER)
+#define BNO055_MAG_POWER BNO055_MAG_SLEEP
+#elif defined(CONFIG_BNO055_MAG_FORCED_POWER)
+#define BNO055_MAG_POWER BNO055_MAG_FORCE_MODE
+#endif
+
+#else
+#define BNO055_MAG_RATE     BNO055_MAG_20Hz
+#define BNO055_MAG_MODE     BNO055_MAG_REGULAR
+#define BNO055_MAG_POWER    BNO055_MAG_FORCE_MODE
+#endif
+
+#if defined(CONFIG_BNO055_GYR_CUSTOM_CONFIG)
+#if defined(CONFIG_BNO055_GYR_125_RANGE)
+#define BNO055_GYR_RANGE BNO055_GYR_125DPS
+#elif defined(CONFIG_BNO055_GYR_250_RANGE)
+#define BNO055_GYR_RANGE BNO055_GYR_250DPS
+#elif defined(CONFIG_BNO055_GYR_500_RANGE)
+#define BNO055_GYR_RANGE BNO055_GYR_500DPS
+#elif defined(CONFIG_BNO055_GYR_1000_RANGE)
+#define BNO055_GYR_RANGE BNO055_GYR_1000DPS
+#elif defined(CONFIG_BNO055_GYR_2000_RANGE)
+#define BNO055_GYR_RANGE BNO055_GYR_2000DPS
+#endif
+
+#if defined(CONFIG_BNO055_GYR_12HZ_BANDWIDTH)
+#define BNO055_GYR_BANDWIDTH BNO055_GYR_12Hz
+#elif defined(CONFIG_BNO055_GYR_23HZ_BANDWIDTH)
+#define BNO055_GYR_BANDWIDTH BNO055_GYR_23Hz
+#elif defined(CONFIG_BNO055_GYR_32HZ_BANDWIDTH)
+#define BNO055_GYR_BANDWIDTH BNO055_GYR_32Hz
+#elif defined(CONFIG_BNO055_GYR_47HZ_BANDWIDTH)
+#define BNO055_GYR_BANDWIDTH BNO055_GYR_47Hz
+#elif defined(CONFIG_BNO055_GYR_64HZ_BANDWIDTH)
+#define BNO055_GYR_BANDWIDTH BNO055_GYR_64Hz
+#elif defined(CONFIG_BNO055_GYR_116HZ_BANDWIDTH)
+#define BNO055_GYR_BANDWIDTH BNO055_GYR_116Hz
+#elif defined(CONFIG_BNO055_GYR_230HZ_BANDWIDTH)
+#define BNO055_GYR_BANDWIDTH BNO055_GYR_230Hz
+#elif defined(CONFIG_BNO055_GYR_523HZ_BANDWIDTH)
+#define BNO055_GYR_BANDWIDTH BNO055_GYR_523Hz
+#endif
+
+#if defined(CONFIG_BNO055_GYR_NORMAL_POWER)
+#define BNO055_GYR_POWER BNO055_GYR_NORMAL
+#elif defined(CONFIG_BNO055_GYR_FAST_POWER)
+#define BNO055_GYR_POWER BNO055_GYR_FAST_POWER_UP
+#elif defined(CONFIG_BNO055_GYR_SUSPEND_POWER)
+#define BNO055_GYR_POWER BNO055_GYR_SUSPEND
+#elif defined(CONFIG_BNO055_GYR_DEEP_SUSPEND_POWER)
+#define BNO055_GYR_POWER BNO055_GYR_DEEP_SUSPEND
+#elif defined(CONFIG_BNO055_GYR_POWERSAVE_POWER)
+#define BNO055_GYR_POWER BNO055_GYR_ADVANCED_POWERSAVE
+#endif
+
+#else
+#define BNO055_GYR_RANGE        BNO055_GYR_2000DPS
+#define BNO055_GYR_BANDWIDTH    BNO055_GYR_32Hz
+#define BNO055_GYR_POWER        BNO055_GYR_NORMAL
+#endif
 
 /* Unit Selection Configuration */
 enum Orientation { // Pitch relative

@@ -23,8 +23,6 @@ struct bno055_data {
 	enum OperatingMode mode;
 	struct unit_config units;
 
-	struct sensors_config config;
-
 	struct vector3_data acc;
 	struct vector3_data mag;
 	struct vector3_data gyr;
@@ -36,156 +34,6 @@ struct bno055_data {
 
 	struct calib_data calib;
 };
-
-static int bno055_load_config(const struct device *dev)
-{
-	struct bno055_data *data = dev->data;
-
-#if defined(CONFIG_BNO055_ACC_CUSTOM_CONFIG)
-#if defined(CONFIG_BNO055_ACC_2G_RANGE)
-	data->config.acc.range = ACC_2G;
-#elif defined(CONFIG_BNO055_ACC_4G_RANGE)
-	data->config.acc.range = ACC_4G;
-#elif defined(CONFIG_BNO055_ACC_8G_RANGE)
-	data->config.acc.range = ACC_8G;
-#elif defined(CONFIG_BNO055_ACC_16G_RANGE)
-	data->config.acc.range = ACC_16G;
-#endif
-
-#if defined(CONFIG_BNO055_ACC_8HZ_BANDWIDTH)
-	data->config.acc.bandwidth = ACC_8Hz;
-#elif defined(CONFIG_BNO055_ACC_16HZ_BANDWIDTH)
-	data->config.acc.bandwidth = ACC_16Hz;
-#elif defined(CONFIG_BNO055_ACC_31HZ_BANDWIDTH)
-	data->config.acc.bandwidth = ACC_31Hz;
-#elif defined(CONFIG_BNO055_ACC_62HZ_BANDWIDTH)
-	data->config.acc.bandwidth = ACC_62Hz;
-#elif defined(CONFIG_BNO055_ACC_125HZ_BANDWIDTH)
-	data->config.acc.bandwidth = ACC_125Hz;
-#elif defined(CONFIG_BNO055_ACC_250HZ_BANDWIDTH)
-	data->config.acc.bandwidth = ACC_250Hz;
-#elif defined(CONFIG_BNO055_ACC_500HZ_BANDWIDTH)
-	data->config.acc.bandwidth = ACC_500Hz;
-#elif defined(CONFIG_BNO055_ACC_1000HZ_BANDWIDTH)
-	data->config.acc.bandwidth = ACC_1000Hz;
-#endif
-
-#if defined(CONFIG_BNO055_ACC_NORMAL_POWER)
-	data->config.acc.power = ACC_NORMAL;
-#elif defined(CONFIG_BNO055_ACC_LOW_1_POWER)
-	data->config.acc.power = ACC_LOW_POWER_1;
-#elif defined(CONFIG_BNO055_ACC_LOW_2_POWER)
-	data->config.acc.power = ACC_LOW_POWER_2;
-#elif defined(CONFIG_BNO055_ACC_STANDBY_POWER)
-	data->config.acc.power = ACC_STANDBY;
-#elif defined(CONFIG_BNO055_ACC_SUSPEND_POWER)
-	data->config.acc.power = ACC_SUSPEND;
-#elif defined(CONFIG_BNO055_ACC_DEEP_SUSPEND_POWER)
-	data->config.acc.power = ACC_DEEP_SUSPEND;
-#endif
-
-#else
-	data->config.acc.range		= ACC_4G;
-	data->config.acc.bandwidth	= ACC_62Hz;
-	data->config.acc.power		= ACC_NORMAL;
-#endif
-
-#if defined(CONFIG_BNO055_MAG_CUSTOM_CONFIG)
-#if defined(CONFIG_BNO055_MAG_2HZ_RATE)
-	data->config.mag.rate = MAG_2Hz;
-#elif defined(CONFIG_BNO055_MAG_6HZ_RATE)
-	data->config.mag.rate = MAG_6Hz;
-#elif defined(CONFIG_BNO055_MAG_8HZ_RATE)
-	data->config.mag.rate = MAG_8Hz;
-#elif defined(CONFIG_BNO055_MAG_10HZ_RATE)
-	data->config.mag.rate = MAG_10Hz;
-#elif defined(CONFIG_BNO055_MAG_15HZ_RATE)
-	data->config.mag.rate = MAG_15Hz;
-#elif defined(CONFIG_BNO055_MAG_20HZ_RATE)
-	data->config.mag.rate = MAG_20Hz;
-#elif defined(CONFIG_BNO055_MAG_25HZ_RATE)
-	data->config.mag.rate = MAG_25Hz;
-#elif defined(CONFIG_BNO055_MAG_30HZ_RATE)
-	data->config.mag.rate = MAG_30Hz;
-#endif
-
-#if defined(CONFIG_BNO055_MAG_LOW_POWER_MODE)
-	data->config.mag.mode = MAG_LOW_POWER;
-#elif defined(CONFIG_BNO055_MAG_REGULAR_MODE)
-	data->config.mag.mode = MAG_REGULAR;
-#elif defined(CONFIG_BNO055_MAG_ENHANCED_REGULAR_MODE)
-	data->config.mag.mode = MAG_ENHANCED_REGULAR;
-#elif defined(CONFIG_BNO055_MAG_HIGH_ACCURACY_MODE)
-	data->config.mag.mode = MAG_HIGH_ACCURACY;
-#endif
-
-#if defined(CONFIG_BNO055_MAG_NORMAL_POWER)
-	data->config.mag.power = MAG_NORMAL;
-#elif defined(CONFIG_BNO055_MAG_SUSPEND_POWER)
-	data->config.mag.power = MAG_SUSPEND;
-#elif defined(CONFIG_BNO055_MAG_SLEEP_POWER)
-	data->config.mag.power = MAG_SLEEP;
-#elif defined(CONFIG_BNO055_MAG_FORCED_POWER)
-	data->config.mag.power = MAG_FORCE_MODE;
-#endif
-
-#else
-	data->config.mag.rate	= MAG_20Hz;
-	data->config.mag.mode	= MAG_REGULAR;
-	data->config.mag.power	= MAG_FORCE_MODE;
-#endif
-
-#if defined(CONFIG_BNO055_GYR_CUSTOM_CONFIG)
-#if defined(CONFIG_BNO055_GYR_125_RANGE)
-	data->config.gyr.range = GYR_125DPS;
-#elif defined(CONFIG_BNO055_GYR_250_RANGE)
-	data->config.gyr.range = GYR_250DPS;
-#elif defined(CONFIG_BNO055_GYR_500_RANGE)
-	data->config.gyr.range = GYR_500DPS;
-#elif defined(CONFIG_BNO055_GYR_1000_RANGE)
-	data->config.gyr.range = GYR_1000DPS;
-#elif defined(CONFIG_BNO055_GYR_2000_RANGE)
-	data->config.gyr.range = GYR_2000DPS;
-#endif
-
-#if defined(CONFIG_BNO055_GYR_12HZ_BANDWIDTH)
-	data->config.gyr.bandwidth = GYR_12Hz;
-#elif defined(CONFIG_BNO055_GYR_23HZ_BANDWIDTH)
-	data->config.gyr.bandwidth = GYR_23Hz;
-#elif defined(CONFIG_BNO055_GYR_32HZ_BANDWIDTH)
-	data->config.gyr.bandwidth = GYR_32Hz;
-#elif defined(CONFIG_BNO055_GYR_47HZ_BANDWIDTH)
-	data->config.gyr.bandwidth = GYR_47Hz;
-#elif defined(CONFIG_BNO055_GYR_64HZ_BANDWIDTH)
-	data->config.gyr.bandwidth = GYR_64Hz;
-#elif defined(CONFIG_BNO055_GYR_116HZ_BANDWIDTH)
-	data->config.gyr.bandwidth = GYR_116Hz;
-#elif defined(CONFIG_BNO055_GYR_230HZ_BANDWIDTH)
-	data->config.gyr.bandwidth = GYR_230Hz;
-#elif defined(CONFIG_BNO055_GYR_523HZ_BANDWIDTH)
-	data->config.gyr.bandwidth = GYR_523Hz;
-#endif
-
-#if defined(CONFIG_BNO055_GYR_NORMAL_POWER)
-	data->config.gyr.power = GYR_NORMAL;
-#elif defined(CONFIG_BNO055_GYR_FAST_POWER)
-	data->config.gyr.power = GYR_FAST_POWER_UP;
-#elif defined(CONFIG_BNO055_GYR_SUSPEND_POWER)
-	data->config.gyr.power = GYR_SUSPEND;
-#elif defined(CONFIG_BNO055_GYR_DEEP_SUSPEND_POWER)
-	data->config.gyr.power = ACC_STANDBY;
-#elif defined(CONFIG_BNO055_GYR_POWERSAVE_POWER)
-	data->config.gyr.power = GYR_ADVANCED_POWERSAVE;
-#endif
-
-#else
-	data->config.gyr.range		= GYR_2000DPS;
-	data->config.gyr.bandwidth	= GYR_32Hz;
-	data->config.gyr.power		= GYR_NORMAL;
-#endif
-
-	return 0;
-}
 
 static int bno055_set_config(const struct device *dev, enum OperatingMode mode, bool fusion)
 {
@@ -229,24 +77,24 @@ static int bno055_set_config(const struct device *dev, enum OperatingMode mode, 
 		data->current_page = PAGE_ONE;
 
 		uint8_t reg = 0x00;
-		reg = reg | data->config.acc.range | data->config.acc.bandwidth | data->config.acc.power;
+		reg = reg | BNO055_ACC_RANGE | BNO055_ACC_BANDWIDTH | BNO055_ACC_POWER;
 		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_ACC_CONFIG, reg);
 		if (err < 0) {
 			return err;
 		}
 
-		reg = 0x00 | data->config.mag.rate | data->config.mag.mode | data->config.mag.power;
+		reg = 0x00 | BNO055_MAG_RATE | BNO055_MAG_MODE | BNO055_MAG_POWER;
 		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_MAG_CONFIG, reg);
 		if (err < 0) {
 			return err;
 		}
 
-		reg = 0x00 | data->config.gyr.range | data->config.gyr.bandwidth;
+		reg = 0x00 | BNO055_GYR_RANGE | BNO055_GYR_BANDWIDTH;
 		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_GYR_CONFIG_0, reg);
 		if (err < 0) {
 			return err;
 		}
-		reg = 0x00 | data->config.gyr.power;
+		reg = 0x00 | BNO055_GYR_POWER;
 		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_GYR_CONFIG_1, reg);
 		if (err < 0) {
 			return err;
@@ -753,8 +601,6 @@ static int bno055_init(const struct device *dev)
 		LOG_ERR("I2C bus not ready!!");
 		return -ENODEV;
 	}
-
-	bno055_load_config(dev);
 
 	LOG_INF("CONFIG");
 	LOG_INF("USE XTAL [%d]", config->use_xtal);
