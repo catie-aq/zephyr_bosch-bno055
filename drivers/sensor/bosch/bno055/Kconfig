@@ -8,3 +8,302 @@ menuconfig BNO055
     select I2C
     help
       Enable driver for Bosch Sensortec GmbH BNO055 9-axis absolute orientation sensor.
+
+if BNO055
+
+config BNO055_ACC_CUSTOM_CONFIG
+    bool "Accelerometer custom configuration"
+    default n
+    depends on BNO055
+    help
+      Enable Accelerometer configuration customization.
+
+if BNO055_ACC_CUSTOM_CONFIG
+
+choice
+    prompt "Range configuration"
+    default BNO055_ACC_4G_RANGE
+
+config BNO055_ACC_2G_RANGE
+    bool "2G"
+    depends on BNO055_ACC_CUSTOM_CONFIG
+
+config BNO055_ACC_4G_RANGE
+    bool "4G"
+    depends on BNO055_ACC_CUSTOM_CONFIG
+
+config BNO055_ACC_8G_RANGE
+    bool "8G"
+    depends on BNO055_ACC_CUSTOM_CONFIG
+
+config BNO055_ACC_16G_RANGE
+    bool "16G"
+    depends on BNO055_ACC_CUSTOM_CONFIG
+
+endchoice
+
+choice
+    prompt "Bandwidth configuration"
+    default BNO055_ACC_62HZ_BANDWIDTH
+
+config BNO055_ACC_8HZ_BANDWIDTH
+    bool "7.81Hz"
+    depends on BNO055_ACC_CUSTOM_CONFIG
+
+config BNO055_ACC_16HZ_BANDWIDTH
+    bool "15.63Hz"
+    depends on BNO055_ACC_CUSTOM_CONFIG
+
+config BNO055_ACC_31HZ_BANDWIDTH
+    bool "31.25Hz"
+    depends on BNO055_ACC_CUSTOM_CONFIG
+
+config BNO055_ACC_62HZ_BANDWIDTH
+    bool "62.5Hz"
+    depends on BNO055_ACC_CUSTOM_CONFIG
+
+config BNO055_ACC_125HZ_BANDWIDTH
+    bool "125Hz"
+    depends on BNO055_ACC_CUSTOM_CONFIG
+
+config BNO055_ACC_250HZ_BANDWIDTH
+    bool "250Hz"
+    depends on BNO055_ACC_CUSTOM_CONFIG
+
+config BNO055_ACC_500HZ_BANDWIDTH
+    bool "500Hz"
+    depends on BNO055_ACC_CUSTOM_CONFIG
+
+config BNO055_ACC_1000HZ_BANDWIDTH
+    bool "1000Hz"
+    depends on BNO055_ACC_CUSTOM_CONFIG
+
+endchoice
+
+choice
+    prompt "Power mode configuration"
+    default BNO055_ACC_NORMAL_POWER
+
+config BNO055_ACC_NORMAL_POWER
+    bool "Normal"
+    depends on BNO055_ACC_CUSTOM_CONFIG
+
+config BNO055_ACC_LOW_1_POWER
+    bool "Low Power 1"
+    depends on BNO055_ACC_CUSTOM_CONFIG
+
+config BNO055_ACC_LOW_2_POWER
+    bool "Low Power 2"
+    depends on BNO055_ACC_CUSTOM_CONFIG
+
+config BNO055_ACC_STANDBY_POWER
+    bool "Standby"
+    depends on BNO055_ACC_CUSTOM_CONFIG
+
+config BNO055_ACC_SUSPEND_POWER
+    bool "Suspend"
+    depends on BNO055_ACC_CUSTOM_CONFIG
+
+config BNO055_ACC_DEEP_SUSPEND_POWER
+    bool "Deep Suspend"
+    depends on BNO055_ACC_CUSTOM_CONFIG
+
+endchoice
+
+endif # BNO055_ACC_CUSTOM_CONFIG
+
+config BNO055_MAG_CUSTOM_CONFIG
+    bool "Magnetometer custom configuration"
+    default n
+    depends on BNO055
+    help
+      Enable Magnetometer configuration customization.
+
+if BNO055_MAG_CUSTOM_CONFIG
+
+choice
+    prompt "Output Rate configuration"
+    default BNO055_MAG_20HZ_OR
+
+config BNO055_MAG_2HZ_OR
+    bool "2Hz"
+    depends on BNO055_MAG_CUSTOM_CONFIG
+
+config BNO055_MAG_6HZ_OR
+    bool "6Hz"
+    depends on BNO055_MAG_CUSTOM_CONFIG
+
+config BNO055_MAG_8HZ_OR
+    bool "8Hz"
+    depends on BNO055_MAG_CUSTOM_CONFIG
+
+config BNO055_MAG_10HZ_OR
+    bool "10Hz"
+    depends on BNO055_MAG_CUSTOM_CONFIG
+
+config BNO055_MAG_150HZ_OR
+    bool "15Hz"
+    depends on BNO055_MAG_CUSTOM_CONFIG
+
+config BNO055_MAG_20HZ_OR
+    bool "20Hz"
+    depends on BNO055_MAG_CUSTOM_CONFIG
+
+config BNO055_MAG_25HZ_OR
+    bool "25Hz"
+    depends on BNO055_MAG_CUSTOM_CONFIG
+
+config BNO055_MAG_30HZ_OR
+    bool "30Hz"
+    depends on BNO055_MAG_CUSTOM_CONFIG
+
+endchoice
+
+choice
+    prompt "Operation mode configuration"
+    default BNO055_MAG_REGULAR_MODE
+
+config BNO055_MAG_LOW_POWER_MODE
+    bool "Low Power"
+    depends on BNO055_MAG_CUSTOM_CONFIG
+
+config BNO055_MAG_REGULAR_MODE
+    bool "Regular"
+    depends on BNO055_MAG_CUSTOM_CONFIG
+
+config BNO055_MAG_ENHANCED_REGULAR_MODE
+    bool "Enhanced Regular"
+    depends on BNO055_MAG_CUSTOM_CONFIG
+
+config BNO055_MAG_HIGH_ACCURACY_MODE
+    bool "High Accuracy"
+    depends on BNO055_MAG_CUSTOM_CONFIG
+
+endchoice
+
+choice
+    prompt "Power mode configuration"
+    default BNO055_MAG_FORCED_POWER
+
+config BNO055_MAG_NORMAL_POWER
+    bool "Normal"
+    depends on BNO055_MAG_CUSTOM_CONFIG
+
+config BNO055_MAG_SUSPEND_POWER
+    bool "Suspend"
+    depends on BNO055_MAG_CUSTOM_CONFIG
+
+config BNO055_MAG_SLEEP_POWER
+    bool "Sleep"
+    depends on BNO055_MAG_CUSTOM_CONFIG
+
+config BNO055_MAG_FORCED_POWER
+    bool "Forced"
+    depends on BNO055_MAG_CUSTOM_CONFIG
+
+endchoice
+
+endif # BNO055_MAG_CUSTOM_CONFIG
+
+config BNO055_GYR_CUSTOM_CONFIG
+    bool "Gyroscope custom configuration"
+    default n
+    depends on BNO055
+    help
+      Enable Gyroscope configuration customization.
+
+if BNO055_GYR_CUSTOM_CONFIG
+
+choice
+    prompt "Range configuration"
+    default BNO055_GYR_2000_RANGE
+
+config BNO055_GYR_125_RANGE
+    bool "125"
+    depends on BNO055_GYR_CUSTOM_CONFIG
+
+config BNO055_GYR_250_RANGE
+    bool "250"
+    depends on BNO055_GYR_CUSTOM_CONFIG
+
+config BNO055_GYR_500_RANGE
+    bool "500"
+    depends on BNO055_GYR_CUSTOM_CONFIG
+
+config BNO055_GYR_1000_RANGE
+    bool "1000"
+    depends on BNO055_GYR_CUSTOM_CONFIG
+
+config BNO055_GYR_2000_RANGE
+    bool "2000"
+    depends on BNO055_GYR_CUSTOM_CONFIG
+
+endchoice
+
+choice
+    prompt "Bandwidth configuration"
+    default BNO055_GYR_32HZ_BANDWIDTH
+
+config BNO055_GYR_12HZ_BANDWIDTH
+    bool "12Hz"
+    depends on BNO055_GYR_CUSTOM_CONFIG
+
+config BNO055_GYR_23HZ_BANDWIDTH
+    bool "23Hz"
+    depends on BNO055_GYR_CUSTOM_CONFIG
+
+config BNO055_GYR_32HZ_BANDWIDTH
+    bool "32Hz"
+    depends on BNO055_GYR_CUSTOM_CONFIG
+
+config BNO055_GYR_47HZ_BANDWIDTH
+    bool "47Hz"
+    depends on BNO055_GYR_CUSTOM_CONFIG
+
+config BNO055_GYR_64HZ_BANDWIDTH
+    bool "64Hz"
+    depends on BNO055_GYR_CUSTOM_CONFIG
+
+config BNO055_GYR_116HZ_BANDWIDTH
+    bool "116Hz"
+    depends on BNO055_GYR_CUSTOM_CONFIG
+
+config BNO055_GYR_230HZ_BANDWIDTH
+    bool "230Hz"
+    depends on BNO055_GYR_CUSTOM_CONFIG
+
+config BNO055_GYR_523HZ_BANDWIDTH
+    bool "523Hz"
+    depends on BNO055_GYR_CUSTOM_CONFIG
+
+endchoice
+
+choice
+    prompt "Power mode configuration"
+    default BNO055_GYR_NORMAL_POWER
+
+config BNO055_GYR_NORMAL_POWER
+    bool "Normal"
+    depends on BNO055_GYR_CUSTOM_CONFIG
+
+config BNO055_GYR_FAST_POWER
+    bool "Fast Power Up"
+    depends on BNO055_GYR_CUSTOM_CONFIG
+
+config BNO055_GYR_SUSPEND_POWER
+    bool "Suspend"
+    depends on BNO055_GYR_CUSTOM_CONFIG
+
+config BNO055_GYR_DEEP_SUSPEND_POWER
+    bool "Deep Suspend"
+    depends on BNO055_GYR_CUSTOM_CONFIG
+
+config BNO055_GYR_POWERSAVE_POWER
+    bool "Advanced Powersave"
+    depends on BNO055_GYR_CUSTOM_CONFIG
+
+endchoice
+
+endif # BNO055_GYR_CUSTOM_CONFIG
+
+endif # BNO055
