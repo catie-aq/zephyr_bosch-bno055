@@ -446,103 +446,103 @@ static int bno055_channel_get(const struct device *dev, enum sensor_channel chan
 	struct bno055_data *data = dev->data;
 
 	if (chan == SENSOR_CHAN_ACCEL_X) {
-		(val)->val1 = data->acc.x / AccelerationConvertion[data->units.acceleration];
-		(val)->val2 = (1000000 / AccelerationConvertion[data->units.acceleration]) * (data->acc.x - (val)->val1 * AccelerationConvertion[data->units.acceleration]);
+		(val)->val1 = data->acc.x / AccelerationResolution[data->units.acceleration];
+		(val)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->acc.x - (val)->val1 * AccelerationResolution[data->units.acceleration]);
 		return 0;
 	}
 
 	if (chan == SENSOR_CHAN_ACCEL_Y) {
-		(val)->val1 = data->acc.y / AccelerationConvertion[data->units.acceleration];
-		(val)->val2 = (1000000 / AccelerationConvertion[data->units.acceleration]) * (data->acc.y - (val)->val1 * AccelerationConvertion[data->units.acceleration]);
+		(val)->val1 = data->acc.y / AccelerationResolution[data->units.acceleration];
+		(val)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->acc.y - (val)->val1 * AccelerationResolution[data->units.acceleration]);
 		return 0;
 	}
 
 	if (chan == SENSOR_CHAN_ACCEL_Z) {
-		(val)->val1 = data->acc.z / AccelerationConvertion[data->units.acceleration];
-		(val)->val2 = (1000000 / AccelerationConvertion[data->units.acceleration]) * (data->acc.z - (val)->val1 * AccelerationConvertion[data->units.acceleration]);
+		(val)->val1 = data->acc.z / AccelerationResolution[data->units.acceleration];
+		(val)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->acc.z - (val)->val1 * AccelerationResolution[data->units.acceleration]);
 		return 0;
 	}
 
 	if (chan == SENSOR_CHAN_ACCEL_XYZ) {
-		(val)->val1 = data->acc.x / AccelerationConvertion[data->units.acceleration];
-		(val)->val2 = (1000000 / AccelerationConvertion[data->units.acceleration]) * (data->acc.x - (val)->val1 * AccelerationConvertion[data->units.acceleration]);
-		(val+1)->val1 = data->acc.y / AccelerationConvertion[data->units.acceleration];
-		(val+1)->val2 = (1000000 / AccelerationConvertion[data->units.acceleration]) * (data->acc.y - (val+1)->val1 * AccelerationConvertion[data->units.acceleration]);
-		(val+2)->val1 = data->acc.z / AccelerationConvertion[data->units.acceleration];
-		(val+2)->val2 = (1000000 / AccelerationConvertion[data->units.acceleration]) * (data->acc.z - (val+2)->val1 * AccelerationConvertion[data->units.acceleration]);
+		(val)->val1 = data->acc.x / AccelerationResolution[data->units.acceleration];
+		(val)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->acc.x - (val)->val1 * AccelerationResolution[data->units.acceleration]);
+		(val+1)->val1 = data->acc.y / AccelerationResolution[data->units.acceleration];
+		(val+1)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->acc.y - (val+1)->val1 * AccelerationResolution[data->units.acceleration]);
+		(val+2)->val1 = data->acc.z / AccelerationResolution[data->units.acceleration];
+		(val+2)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->acc.z - (val+2)->val1 * AccelerationResolution[data->units.acceleration]);
 		return 0;
 	}
 
 	if (chan == (enum sensor_channel)SENSOR_CHAN_GYRO_XYZ) {
-		(val)->val1 = 0;
-		(val)->val2 = 0;
-		(val+1)->val1 = 0;
-		(val+1)->val2 = 0;
-		(val+2)->val1 = 0;
-		(val+2)->val2 = 0;
+		(val)->val1 = data->gyr.x / RotationResolution[data->units.rotation];
+		(val)->val2 = (1000000 / RotationResolution[data->units.rotation]) * (data->gyr.x - (val)->val1 * RotationResolution[data->units.rotation]);
+		(val+1)->val1 = data->gyr.y / RotationResolution[data->units.rotation];
+		(val+1)->val2 = (1000000 / RotationResolution[data->units.rotation]) * (data->gyr.y - (val+1)->val1 * RotationResolution[data->units.rotation]);
+		(val+2)->val1 = data->gyr.z / RotationResolution[data->units.rotation];
+		(val+2)->val2 = (1000000 / RotationResolution[data->units.rotation]) * (data->gyr.z - (val+2)->val1 * RotationResolution[data->units.rotation]);
 		return 0;
 	}
 
 	if (chan == (enum sensor_channel)SENSOR_CHAN_MAGN_XYZ) {
-		(val)->val1 = 0;
-		(val)->val2 = 0;
-		(val+1)->val1 = 0;
-		(val+1)->val2 = 0;
-		(val+2)->val1 = 0;
-		(val+2)->val2 = 0;
+		(val)->val1 = (BNO055_UTESLA_TO_GAUSS * data->mag.x) / uTeslaResolution;
+		(val)->val2 = (1000000 / uTeslaResolution) * ((BNO055_UTESLA_TO_GAUSS * data->mag.x) - (val)->val1 * uTeslaResolution);
+		(val+1)->val1 = (BNO055_UTESLA_TO_GAUSS * data->mag.y) / uTeslaResolution;
+		(val+1)->val2 = (1000000 / uTeslaResolution) * ((BNO055_UTESLA_TO_GAUSS * data->mag.y) - (val+1)->val1 * uTeslaResolution);
+		(val+2)->val1 = (BNO055_UTESLA_TO_GAUSS * data->mag.z) / uTeslaResolution;
+		(val+2)->val2 = (1000000 / uTeslaResolution) * ((BNO055_UTESLA_TO_GAUSS * data->mag.z) - (val+2)->val1 * uTeslaResolution);
 		return 0;
 	}
 
 	if (chan == (enum sensor_channel)SENSOR_CHAN_EULER_YRP) {
-		(val)->val1 = 0;
-		(val)->val2 = 0;
-		(val+1)->val1 = 0;
-		(val+1)->val2 = 0;
-		(val+2)->val1 = 0;
-		(val+2)->val2 = 0;
+		(val)->val1 = data->eul.x / EulerResolution[data->units.euler];
+		(val)->val2 = (1000000 / EulerResolution[data->units.euler]) * (data->eul.x - (val)->val1 * EulerResolution[data->units.euler]);
+		(val+1)->val1 = data->eul.y / EulerResolution[data->units.euler];
+		(val+1)->val2 = (1000000 / EulerResolution[data->units.euler]) * (data->eul.y - (val+1)->val1 * EulerResolution[data->units.euler]);
+		(val+2)->val1 = data->eul.z / EulerResolution[data->units.euler];
+		(val+2)->val2 = (1000000 / EulerResolution[data->units.euler]) * (data->eul.z - (val+2)->val1 * EulerResolution[data->units.euler]);
 		return 0;
 	}
 
 	if (chan == (enum sensor_channel)SENSOR_CHAN_QUADTERNION_WXYZ) {
-		(val)->val1 = 0;
-		(val)->val2 = 0;
-		(val+1)->val1 = 0;
-		(val+1)->val2 = 0;
-		(val+2)->val1 = 0;
-		(val+2)->val2 = 0;
-		(val+3)->val1 = 0;
-		(val+3)->val2 = 0;
+		(val)->val1 = data->qua.w / QuaternionResolution;
+		(val)->val2 = (1000000 / QuaternionResolution) * (data->qua.w - (val)->val1 * QuaternionResolution);
+		(val+1)->val1 = data->qua.x / QuaternionResolution;
+		(val+1)->val2 = (1000000 / QuaternionResolution) * (data->qua.x - (val+1)->val1 * QuaternionResolution);
+		(val+2)->val1 = data->qua.y / QuaternionResolution;
+		(val+2)->val2 = (1000000 / QuaternionResolution) * (data->qua.y - (val+2)->val1 * QuaternionResolution);
+		(val+3)->val1 = data->qua.z / QuaternionResolution;
+		(val+3)->val2 = (1000000 / QuaternionResolution) * (data->qua.z - (val+3)->val1 * QuaternionResolution);
 		return 0;
 	}
 
 	if (chan == (enum sensor_channel)SENSOR_CHAN_LINEAR_ACCEL_XYZ) {
-		(val)->val1 = 0;
-		(val)->val2 = 0;
-		(val+1)->val1 = 0;
-		(val+1)->val2 = 0;
-		(val+2)->val1 = 0;
-		(val+2)->val2 = 0;
+		(val)->val1 = data->lia.x / AccelerationResolution[data->units.acceleration];
+		(val)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->lia.x - (val)->val1 * AccelerationResolution[data->units.acceleration]);
+		(val+1)->val1 = data->lia.y / AccelerationResolution[data->units.acceleration];
+		(val+1)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->lia.y - (val+1)->val1 * AccelerationResolution[data->units.acceleration]);
+		(val+2)->val1 = data->lia.z / AccelerationResolution[data->units.acceleration];
+		(val+2)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->lia.z - (val+2)->val1 * AccelerationResolution[data->units.acceleration]);
 		return 0;
 	}
 
 	if (chan == (enum sensor_channel)SENSOR_CHAN_GRAVITY_XYZ) {
-		(val)->val1 = data->grv.x / AccelerationConvertion[data->units.acceleration];
-		(val)->val2 = (1000000 / AccelerationConvertion[data->units.acceleration]) * (data->grv.x - (val)->val1 * AccelerationConvertion[data->units.acceleration]);
-		(val+1)->val1 = data->grv.y / AccelerationConvertion[data->units.acceleration];
-		(val+1)->val2 = (1000000 / AccelerationConvertion[data->units.acceleration]) * (data->grv.y - (val+1)->val1 * AccelerationConvertion[data->units.acceleration]);
-		(val+2)->val1 = data->grv.z / AccelerationConvertion[data->units.acceleration];
-		(val+2)->val2 = (1000000 / AccelerationConvertion[data->units.acceleration]) * (data->grv.z - (val+2)->val1 * AccelerationConvertion[data->units.acceleration]);
+		(val)->val1 = data->grv.x / AccelerationResolution[data->units.acceleration];
+		(val)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->grv.x - (val)->val1 * AccelerationResolution[data->units.acceleration]);
+		(val+1)->val1 = data->grv.y / AccelerationResolution[data->units.acceleration];
+		(val+1)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->grv.y - (val+1)->val1 * AccelerationResolution[data->units.acceleration]);
+		(val+2)->val1 = data->grv.z / AccelerationResolution[data->units.acceleration];
+		(val+2)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->grv.z - (val+2)->val1 * AccelerationResolution[data->units.acceleration]);
 		return 0;
 	}
 
 	if (chan == (enum sensor_channel)SENSOR_CHAN_CALIBRATION_SGAM) {
-		(val)->val1 = 0;
+		(val)->val1 = data->calib.sys;
 		(val)->val2 = 0;
-		(val+1)->val1 = 0;
+		(val+1)->val1 = data->calib.gyr;
 		(val+1)->val2 = 0;
-		(val+2)->val1 = 0;
+		(val+2)->val1 = data->calib.acc;
 		(val+2)->val2 = 0;
-		(val+3)->val1 = 0;
+		(val+3)->val1 = data->calib.mag;
 		(val+3)->val2 = 0;
 		return 0;
 	}

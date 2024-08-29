@@ -375,6 +375,9 @@ struct mag_config { // BNO055_REGISTER_MAG_CONFIG
     enum MAG_PowerMode      power;
 };
 
+#define BNO055_UTESLA_TO_GAUSS 100
+static const uint16_t uTeslaResolution = 16;
+
 /* Unit Selection Configuration */
 enum Orientation { // Pitch relative
     WINDOWS = 0x00, // clockwise
@@ -391,21 +394,22 @@ enum EulerUnit {
     RADIANS = 0x01
 };
 
-static const uint16_t EulerConvertion[2] = {16, 900}; // DEGREES | RADIANS
+static const uint16_t EulerResolution[2] = {16, 900}; // DEGREES | RADIANS
+static const uint16_t QuaternionResolution = 16384;
 
 enum RotationUnit {
     DPS = 0x00,
     RPS = 0x01
 };
 
-static const uint16_t RotationConvertion[2] = {16, 900}; // DPS | RPS
+static const uint16_t RotationResolution[2] = {16, 900}; // DPS | RPS
 
 enum AccelerationUnit {
     MS_2    = 0x00,
     MG      = 0x01
 };
 
-static const uint16_t AccelerationConvertion[2] = {100, 1}; // MS_2 | MG
+static const uint16_t AccelerationResolution[2] = {100, 1}; // MS_2 | MG
 
 struct unit_config {
     enum Orientation        orientation;
