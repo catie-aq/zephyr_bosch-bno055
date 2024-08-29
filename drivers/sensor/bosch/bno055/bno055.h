@@ -294,7 +294,7 @@ enum ACC_Bandwidth {
     ACC_1000Hz  = 0x07
 };
 
-enum ACC_OperatingMode {
+enum ACC_PowerMode {
     ACC_NORMAL          = 0x00,
     ACC_SUSPEND         = 0x01,
     ACC_LOW_POWER_1     = 0x02,
@@ -304,43 +304,9 @@ enum ACC_OperatingMode {
 };
 
 struct acc_config { // BNO055_REGISTER_ACC_CONFIG
-    enum ACC_GRange         range;
-    enum ACC_Bandwidth      bandwidth;
-    enum ACC_OperatingMode  mode;
-};
-
-/* Gyroscope Configuration */
-enum GYR_GRange {
-    GYR_2000DPS = 0x00,
-    GYR_1000DPS = 0x01,
-    GYR_500DPS  = 0x02,
-    GYR_250DPS  = 0x03,
-    GYR_125DPS  = 0x04
-};
-
-enum GYR_Bandwidth {
-    GYR_523Hz   = 0x00,
-    GYR_230Hz   = 0x01,
-    GYR_116Hz   = 0x02,
-    GYR_47Hz    = 0x03,
-    GYR_23Hz    = 0x04,
-    GYR_12Hz    = 0x05,
-    GYR_64Hz    = 0x06,
-    GYR_32Hz    = 0x07
-};
-
-enum GYR_OperatingMode {
-    GYR_NORMAL              = 0x00,
-    GYR_FAST_POWER_UP       = 0x01,
-    GYR_DEEP_SUSPEND        = 0x02,
-    GYR_SUSPEND             = 0x03,
-    GYR_ADVANCED_POWERSAVE  = 0x04
-};
-
-struct gyr_config {
-    enum GYR_GRange         range; // BNO055_REGISTER_GYR_CONFIG_0
-    enum GYR_Bandwidth      bandwidth; // BNO055_REGISTER_GYR_CONFIG_0
-    enum GYR_OperatingMode  mode; // BNO055_REGISTER_GYR_CONFIG_1
+    enum ACC_GRange     range;
+    enum ACC_Bandwidth  bandwidth;
+    enum ACC_PowerMode  power;
 };
 
 /* Magnetometer Configuration */
@@ -377,6 +343,46 @@ struct mag_config { // BNO055_REGISTER_MAG_CONFIG
 
 #define BNO055_UTESLA_TO_GAUSS 100
 static const uint16_t uTeslaResolution = 16;
+
+/* Gyroscope Configuration */
+enum GYR_GRange {
+    GYR_2000DPS = 0x00,
+    GYR_1000DPS = 0x01,
+    GYR_500DPS  = 0x02,
+    GYR_250DPS  = 0x03,
+    GYR_125DPS  = 0x04
+};
+
+enum GYR_Bandwidth {
+    GYR_523Hz   = 0x00,
+    GYR_230Hz   = 0x01,
+    GYR_116Hz   = 0x02,
+    GYR_47Hz    = 0x03,
+    GYR_23Hz    = 0x04,
+    GYR_12Hz    = 0x05,
+    GYR_64Hz    = 0x06,
+    GYR_32Hz    = 0x07
+};
+
+enum GYR_PowerMode {
+    GYR_NORMAL              = 0x00,
+    GYR_FAST_POWER_UP       = 0x01,
+    GYR_DEEP_SUSPEND        = 0x02,
+    GYR_SUSPEND             = 0x03,
+    GYR_ADVANCED_POWERSAVE  = 0x04
+};
+
+struct gyr_config {
+    enum GYR_GRange     range; // BNO055_REGISTER_GYR_CONFIG_0
+    enum GYR_Bandwidth  bandwidth; // BNO055_REGISTER_GYR_CONFIG_0
+    enum GYR_PowerMode  power; // BNO055_REGISTER_GYR_CONFIG_1
+};
+
+struct sensors_config {
+    struct acc_config acc;
+    struct mag_config mag;
+    struct gyr_config gyr;
+};
 
 /* Unit Selection Configuration */
 enum Orientation { // Pitch relative

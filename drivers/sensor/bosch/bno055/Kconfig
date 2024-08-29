@@ -123,37 +123,37 @@ if BNO055_MAG_CUSTOM_CONFIG
 
 choice
     prompt "Output Rate configuration"
-    default BNO055_MAG_20HZ_OR
+    default BNO055_MAG_20HZ_RATE
 
-config BNO055_MAG_2HZ_OR
+config BNO055_MAG_2HZ_RATE
     bool "2Hz"
     depends on BNO055_MAG_CUSTOM_CONFIG
 
-config BNO055_MAG_6HZ_OR
+config BNO055_MAG_6HZ_RATE
     bool "6Hz"
     depends on BNO055_MAG_CUSTOM_CONFIG
 
-config BNO055_MAG_8HZ_OR
+config BNO055_MAG_8HZ_RATE
     bool "8Hz"
     depends on BNO055_MAG_CUSTOM_CONFIG
 
-config BNO055_MAG_10HZ_OR
+config BNO055_MAG_10HZ_RATE
     bool "10Hz"
     depends on BNO055_MAG_CUSTOM_CONFIG
 
-config BNO055_MAG_150HZ_OR
+config BNO055_MAG_15HZ_RATE
     bool "15Hz"
     depends on BNO055_MAG_CUSTOM_CONFIG
 
-config BNO055_MAG_20HZ_OR
+config BNO055_MAG_20HZ_RATE
     bool "20Hz"
     depends on BNO055_MAG_CUSTOM_CONFIG
 
-config BNO055_MAG_25HZ_OR
+config BNO055_MAG_25HZ_RATE
     bool "25Hz"
     depends on BNO055_MAG_CUSTOM_CONFIG
 
-config BNO055_MAG_30HZ_OR
+config BNO055_MAG_30HZ_RATE
     bool "30Hz"
     depends on BNO055_MAG_CUSTOM_CONFIG
 
