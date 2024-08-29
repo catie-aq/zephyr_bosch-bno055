@@ -471,7 +471,7 @@ static int bno055_channel_get(const struct device *dev, enum sensor_channel chan
 			(val+2)->val2 = (1000000 / AccelerationConvertion[data->units.acceleration]) * (data->acc.z - (val+2)->val1 * AccelerationConvertion[data->units.acceleration]);
 			break;
 
-		case SENSOR_CHAN_GYRO_XYZ:
+		case (enum sensor_channel)SENSOR_CHAN_GYRO_XYZ:
 			(val)->val1 = 0;
 			(val)->val2 = 0;
 			(val+1)->val1 = 0;
@@ -480,7 +480,7 @@ static int bno055_channel_get(const struct device *dev, enum sensor_channel chan
 			(val+2)->val2 = 0;
 			break;
 
-		case SENSOR_CHAN_MAGN_XYZ:
+		case (enum sensor_channel)SENSOR_CHAN_MAGN_XYZ:
 			(val)->val1 = 0;
 			(val)->val2 = 0;
 			(val+1)->val1 = 0;
@@ -489,7 +489,7 @@ static int bno055_channel_get(const struct device *dev, enum sensor_channel chan
 			(val+2)->val2 = 0;
 			break;
 
-		case SENSOR_CHAN_EULER_HRP:
+		case (enum sensor_channel)SENSOR_CHAN_EULER_YRP:
 			(val)->val1 = 0;
 			(val)->val2 = 0;
 			(val+1)->val1 = 0;
@@ -498,7 +498,7 @@ static int bno055_channel_get(const struct device *dev, enum sensor_channel chan
 			(val+2)->val2 = 0;
 			break;
 
-		case SENSOR_CHAN_QUADTERNION_WXYZ:
+		case (enum sensor_channel)SENSOR_CHAN_QUADTERNION_WXYZ:
 			(val)->val1 = 0;
 			(val)->val2 = 0;
 			(val+1)->val1 = 0;
@@ -509,7 +509,7 @@ static int bno055_channel_get(const struct device *dev, enum sensor_channel chan
 			(val+3)->val2 = 0;
 			break;
 
-		case SENSOR_CHAN_LINEAR_ACCEL_XYZ:
+		case (enum sensor_channel)SENSOR_CHAN_LINEAR_ACCEL_XYZ:
 			(val)->val1 = 0;
 			(val)->val2 = 0;
 			(val+1)->val1 = 0;
@@ -518,7 +518,7 @@ static int bno055_channel_get(const struct device *dev, enum sensor_channel chan
 			(val+2)->val2 = 0;
 			break;
 
-		case SENSOR_CHAN_GRAVITY_XYZ:
+		case (enum sensor_channel)SENSOR_CHAN_GRAVITY_XYZ:
 			(val)->val1 = data->grv.x / AccelerationConvertion[data->units.acceleration];
 			(val)->val2 = (1000000 / AccelerationConvertion[data->units.acceleration]) * (data->grv.x - (val)->val1 * AccelerationConvertion[data->units.acceleration]);
 			(val+1)->val1 = data->grv.y / AccelerationConvertion[data->units.acceleration];
@@ -527,7 +527,7 @@ static int bno055_channel_get(const struct device *dev, enum sensor_channel chan
 			(val+2)->val2 = (1000000 / AccelerationConvertion[data->units.acceleration]) * (data->grv.z - (val+2)->val1 * AccelerationConvertion[data->units.acceleration]);
 			break;
 
-		case SENSOR_CHAN_CALIBRATION_ABCD:
+		case (enum sensor_channel)SENSOR_CHAN_CALIBRATION_SGAM:
 			(val)->val1 = 0;
 			(val)->val2 = 0;
 			(val+1)->val1 = 0;
