@@ -599,31 +599,31 @@ static int bno055_channel_get(const struct device *dev, enum sensor_channel chan
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_QUADTERNION_W) {
+	if (chan == (enum sensor_channel)SENSOR_CHAN_QUATERNION_W) {
 		(val)->val1 = data->qua.w / QuaternionResolution;
 		(val)->val2 = (1000000 / QuaternionResolution) * (data->qua.w - (val)->val1 * QuaternionResolution);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_QUADTERNION_X) {
+	if (chan == (enum sensor_channel)SENSOR_CHAN_QUATERNION_X) {
 		(val)->val1 = data->qua.x / QuaternionResolution;
 		(val)->val2 = (1000000 / QuaternionResolution) * (data->qua.x - (val)->val1 * QuaternionResolution);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_QUADTERNION_Y) {
+	if (chan == (enum sensor_channel)SENSOR_CHAN_QUATERNION_Y) {
 		(val)->val1 = data->qua.y / QuaternionResolution;
 		(val)->val2 = (1000000 / QuaternionResolution) * (data->qua.y - (val)->val1 * QuaternionResolution);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_QUADTERNION_Z) {
+	if (chan == (enum sensor_channel)SENSOR_CHAN_QUATERNION_Z) {
 		(val)->val1 = data->qua.z / QuaternionResolution;
 		(val)->val2 = (1000000 / QuaternionResolution) * (data->qua.z - (val)->val1 * QuaternionResolution);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_QUADTERNION_WXYZ) {
+	if (chan == (enum sensor_channel)SENSOR_CHAN_QUATERNION_WXYZ) {
 		(val)->val1 = data->qua.w / QuaternionResolution;
 		(val)->val2 = (1000000 / QuaternionResolution) * (data->qua.w - (val)->val1 * QuaternionResolution);
 		(val+1)->val1 = data->qua.x / QuaternionResolution;
