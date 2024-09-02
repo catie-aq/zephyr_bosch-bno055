@@ -532,4 +532,7 @@ struct calib_data {
     int16_t mag;
 };
 
+#define BNO055_CALIBRATION_FULL 0x03
+#define BNO055_CALIBRATION_NONE 0x00
+
 #endif /* ZEPHYR_DRIVERS_SENSOR_BNO055_BNO055_H_ */
