@@ -20,7 +20,7 @@ int main(void)
 	}
 
 	struct sensor_value config = {
-		.val1 = NDOF,
+		.val1 = BNO055_MODE_NDOF,
 		.val2 = 0,
 	};
 	sensor_attr_set(dev, SENSOR_CHAN_ALL, SENSOR_ATTR_CONFIGURATION, &config);
@@ -29,11 +29,11 @@ int main(void)
 		sensor_sample_fetch(dev);
 
 		// Example for Linear Acceleration and Gravity
-		sensor_channel_get(dev, SENSOR_CHAN_LINEAR_ACCEL_XYZ, lia);
-		sensor_channel_get(dev, SENSOR_CHAN_GRAVITY_XYZ, grav);
-		sensor_channel_get(dev, SENSOR_CHAN_EULER_YRP, eul);
-		sensor_channel_get(dev, SENSOR_CHAN_QUADTERNION_WXYZ, quat);
-		sensor_channel_get(dev, SENSOR_CHAN_CALIBRATION_SGAM, calib);
+		sensor_channel_get(dev, BNO055_SENSOR_CHAN_LINEAR_ACCEL_XYZ, lia);
+		sensor_channel_get(dev, BNO055_SENSOR_CHAN_GRAVITY_XYZ, grav);
+		sensor_channel_get(dev, BNO055_SENSOR_CHAN_EULER_YRP, eul);
+		sensor_channel_get(dev, BNO055_SENSOR_CHAN_QUATERNION_WXYZ, quat);
+		sensor_channel_get(dev, BNO055_SENSOR_CHAN_CALIBRATION_SGAM, calib);
 
 		printk("LINACCEL: X(m.s-2)[%d.%06d] Y(m.s-2)[%d.%06d] Z(m.s-2)[%d.%06d]\n",
 				lia[0].val1, lia[0].val2,

@@ -21,7 +21,6 @@ struct bno055_config {
 struct bno055_data {
 	uint8_t current_page;
 	enum OperatingMode mode;
-	struct unit_config units;
 
 	struct vector3_data acc;
 	struct vector3_data mag;
@@ -46,23 +45,23 @@ static int bno055_set_config(const struct device *dev, enum OperatingMode mode, 
 	int err;
 
 	/* Switch to Page 0 */
-	if (data->current_page != PAGE_ZERO) {
-		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, PAGE_ZERO);
+	if (data->current_page != BNO055_PAGE_ZERO) {
+		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, BNO055_PAGE_ZERO);
 		if (err < 0) {
 			return err;
 		}
-		data->current_page = PAGE_ZERO;
+		data->current_page = BNO055_PAGE_ZERO;
 	}
 
-	if (data->mode != CONFIG_MODE) {
-		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_OPERATION_MODE, CONFIG_MODE);
+	if (data->mode != BNO055_MODE_CONFIG) {
+		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_OPERATION_MODE, BNO055_MODE_CONFIG);
 		if (err < 0) {
 			return err;
 		}
 		k_sleep(K_MSEC(BNO055_TIMING_SWITCH_FROM_ANY));
 	}
 
-	if (mode == CONFIG_MODE) {
+	if (mode == BNO055_MODE_CONFIG) {
 		data->mode = mode;
 		return 0;
 	}
@@ -70,11 +69,11 @@ static int bno055_set_config(const struct device *dev, enum OperatingMode mode, 
 #if defined(CONFIG_BNO055_ACC_CUSTOM_CONFIG) || defined(CONFIG_BNO055_MAG_CUSTOM_CONFIG) || defined(CONFIG_BNO055_GYR_CUSTOM_CONFIG)
 	if (!fusion) {
 		/* Switch to Page 1 */
-		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, PAGE_ONE);
+		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, BNO055_PAGE_ONE);
 		if (err < 0) {
 			return err;
 		}
-		data->current_page = PAGE_ONE;
+		data->current_page = BNO055_PAGE_ONE;
 
 		uint8_t reg = 0x00;
 		reg = reg | BNO055_ACC_RANGE | BNO055_ACC_BANDWIDTH | BNO055_ACC_POWER;
@@ -101,11 +100,11 @@ static int bno055_set_config(const struct device *dev, enum OperatingMode mode, 
 		}
 
 		/* Switch back to Page 0 */
-		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, PAGE_ZERO);
+		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, BNO055_PAGE_ZERO);
 		if (err < 0) {
 			return err;
 		}
-		data->current_page = PAGE_ZERO;
+		data->current_page = BNO055_PAGE_ZERO;
 	}
 #endif
 
@@ -180,68 +179,68 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 			if (attr == SENSOR_ATTR_CONFIGURATION) {
 				switch (val->val1)
 				{
-					case CONFIG_MODE:
-						err = bno055_set_config(dev, CONFIG_MODE, false);
+					case BNO055_MODE_CONFIG:
+						err = bno055_set_config(dev, BNO055_MODE_CONFIG, false);
 						if (err < 0) return err;
 						break;
 
-					case ACC_ONLY:
-						err = bno055_set_config(dev, ACC_ONLY, false);
+					case BNO055_MODE_ACC_ONLY:
+						err = bno055_set_config(dev, BNO055_MODE_ACC_ONLY, false);
 						if (err < 0) return err;
 						break;
 
-					case MAG_ONLY:
-						err = bno055_set_config(dev, MAG_ONLY, false);
+					case BNO055_MODE_MAG_ONLY:
+						err = bno055_set_config(dev, BNO055_MODE_MAG_ONLY, false);
 						if (err < 0) return err;
 						break;
 					
-					case GYRO_ONLY:
-						err = bno055_set_config(dev, GYRO_ONLY, false);
+					case BNO055_MODE_GYRO_ONLY:
+						err = bno055_set_config(dev, BNO055_MODE_GYRO_ONLY, false);
 						if (err < 0) return err;
 						break;
 
-					case ACC_MAG:
-						err = bno055_set_config(dev, ACC_MAG, false);
+					case BNO055_MODE_ACC_MAG:
+						err = bno055_set_config(dev, BNO055_MODE_ACC_MAG, false);
 						if (err < 0) return err;
 						break;
 
-					case ACC_GYRO:
-						err = bno055_set_config(dev, ACC_GYRO, false);
+					case BNO055_MODE_ACC_GYRO:
+						err = bno055_set_config(dev, BNO055_MODE_ACC_GYRO, false);
 						if (err < 0) return err;
 						break;
 
-					case MAG_GYRO:
-						err = bno055_set_config(dev, MAG_GYRO, false);
+					case BNO055_MODE_MAG_GYRO:
+						err = bno055_set_config(dev, BNO055_MODE_MAG_GYRO, false);
 						if (err < 0) return err;
 						break;
 
-					case ACC_MAG_GYRO:
-						err = bno055_set_config(dev, ACC_MAG_GYRO, false);
+					case BNO055_MODE_ACC_MAG_GYRO:
+						err = bno055_set_config(dev, BNO055_MODE_ACC_MAG_GYRO, false);
 						if (err < 0) return err;
 						break;
 
-					case IMU:
-						err = bno055_set_config(dev, IMU, true);
+					case BNO055_MODE_IMU:
+						err = bno055_set_config(dev, BNO055_MODE_IMU, true);
 						if (err < 0) return err;
 						break;
 
-					case COMPASS:
-						err = bno055_set_config(dev, COMPASS, true);
+					case BNO055_MODE_COMPASS:
+						err = bno055_set_config(dev, BNO055_MODE_COMPASS, true);
 						if (err < 0) return err;
 						break;
 
-					case M4G:
-						err = bno055_set_config(dev, M4G, true);
+					case BNO055_MODE_M4G:
+						err = bno055_set_config(dev, BNO055_MODE_M4G, true);
 						if (err < 0) return err;
 						break;
 
-					case NDOF_FMC_OFF:
-						err = bno055_set_config(dev, NDOF_FMC_OFF, true);
+					case BNO055_MODE_NDOF_FMC_OFF:
+						err = bno055_set_config(dev, BNO055_MODE_NDOF_FMC_OFF, true);
 						if (err < 0) return err;
 						break;
 
-					case NDOF:
-						err = bno055_set_config(dev, NDOF, true);
+					case BNO055_MODE_NDOF:
+						err = bno055_set_config(dev, BNO055_MODE_NDOF, true);
 						if (err < 0) return err;
 						break;
 					
@@ -264,21 +263,21 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 	int err;
 
 	/* Switch to Page 0 */
-	if (data->current_page != PAGE_ZERO) {
-		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, PAGE_ZERO);
+	if (data->current_page != BNO055_PAGE_ZERO) {
+		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, BNO055_PAGE_ZERO);
 		if (err < 0) {
 			return err;
 		}
-		data->current_page = PAGE_ZERO;
+		data->current_page = BNO055_PAGE_ZERO;
 	}
 
 	switch (data->mode)
 	{
-		case CONFIG_MODE:
+		case BNO055_MODE_CONFIG:
 			LOG_INF("CONFIG Mode no sample");
 			break;
 
-		case ACC_ONLY:
+		case BNO055_MODE_ACC_ONLY:
 			LOG_INF("ACC fetching..");
 			err = bno055_vector3_fetch(dev, BNO055_REGISTER_ACC_DATA, &data->acc);
 			if (err < 0) {
@@ -286,7 +285,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 			}
 			break;
 
-		case MAG_ONLY:
+		case BNO055_MODE_MAG_ONLY:
 			LOG_INF("MAG fetching..");
 			err = bno055_vector3_fetch(dev, BNO055_REGISTER_MAG_DATA, &data->mag);
 			if (err < 0) {
@@ -294,7 +293,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 			}
 			break;
 
-		case GYRO_ONLY:
+		case BNO055_MODE_GYRO_ONLY:
 			LOG_INF("GYR fetching..");
 			err = bno055_vector3_fetch(dev, BNO055_REGISTER_GYR_DATA, &data->gyr);
 			if (err < 0) {
@@ -302,7 +301,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 			}
 			break;
 
-		case ACC_MAG:
+		case BNO055_MODE_ACC_MAG:
 			LOG_INF("ACC_MAG fetching..");
 			err = bno055_vector3_fetch(dev, BNO055_REGISTER_ACC_DATA, &data->acc);
 			if (err < 0) {
@@ -314,7 +313,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 			}
 			break;
 
-		case ACC_GYRO:
+		case BNO055_MODE_ACC_GYRO:
 			LOG_INF("ACC_GYRO fetching..");
 			err = bno055_vector3_fetch(dev, BNO055_REGISTER_ACC_DATA, &data->acc);
 			if (err < 0) {
@@ -326,7 +325,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 			}
 			break;
 
-		case MAG_GYRO:
+		case BNO055_MODE_MAG_GYRO:
 			LOG_INF("MAG_GYRO fetching..");
 			err = bno055_vector3_fetch(dev, BNO055_REGISTER_MAG_DATA, &data->mag);
 			if (err < 0) {
@@ -338,7 +337,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 			}
 			break;
 
-		case ACC_MAG_GYRO:
+		case BNO055_MODE_ACC_MAG_GYRO:
 			LOG_INF("ACC_MAG_GYRO fetching..");
 			err = bno055_vector3_fetch(dev, BNO055_REGISTER_ACC_DATA, &data->acc);
 			if (err < 0) {
@@ -354,7 +353,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 			}
 			break;
 
-		case IMU:
+		case BNO055_MODE_IMU:
 			LOG_INF("IMU fetching..");
 			err = bno055_vector3_fetch(dev, BNO055_REGISTER_EUL_DATA, &data->eul);
 			if (err < 0) {
@@ -378,7 +377,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 			}
 			break;
 
-		case COMPASS:
+		case BNO055_MODE_COMPASS:
 			LOG_INF("COMPASS fetching..");
 			err = bno055_vector3_fetch(dev, BNO055_REGISTER_EUL_DATA, &data->eul);
 			if (err < 0) {
@@ -402,7 +401,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 			}
 			break;
 
-		case M4G:
+		case BNO055_MODE_M4G:
 			LOG_INF("M4G fetching..");
 			err = bno055_vector3_fetch(dev, BNO055_REGISTER_EUL_DATA, &data->eul);
 			if (err < 0) {
@@ -426,7 +425,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 			}
 			break;
 
-		case NDOF_FMC_OFF:
+		case BNO055_MODE_NDOF_FMC_OFF:
 			LOG_INF("NDOF_FMC_OFF fetching..");
 			err = bno055_vector3_fetch(dev, BNO055_REGISTER_EUL_DATA, &data->eul);
 			if (err < 0) {
@@ -450,7 +449,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 			}
 			break;
 
-		case NDOF:
+		case BNO055_MODE_NDOF:
 			LOG_INF("NDOF fetching..");
 			err = bno055_vector3_fetch(dev, BNO055_REGISTER_EUL_DATA, &data->eul);
 			if (err < 0) {
@@ -488,234 +487,234 @@ static int bno055_channel_get(const struct device *dev, enum sensor_channel chan
 	struct bno055_data *data = dev->data;
 
 	if (chan == SENSOR_CHAN_ACCEL_X) {
-		(val)->val1 = data->acc.x / AccelerationResolution[data->units.acceleration];
-		(val)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->acc.x - (val)->val1 * AccelerationResolution[data->units.acceleration]);
+		(val)->val1 = data->acc.x / BNO055_ACCEL_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_ACCEL_RESOLUTION) * (data->acc.x - (val)->val1 * BNO055_ACCEL_RESOLUTION);
 		return 0;
 	}
 
 	if (chan == SENSOR_CHAN_ACCEL_Y) {
-		(val)->val1 = data->acc.y / AccelerationResolution[data->units.acceleration];
-		(val)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->acc.y - (val)->val1 * AccelerationResolution[data->units.acceleration]);
+		(val)->val1 = data->acc.y / BNO055_ACCEL_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_ACCEL_RESOLUTION) * (data->acc.y - (val)->val1 * BNO055_ACCEL_RESOLUTION);
 		return 0;
 	}
 
 	if (chan == SENSOR_CHAN_ACCEL_Z) {
-		(val)->val1 = data->acc.z / AccelerationResolution[data->units.acceleration];
-		(val)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->acc.z - (val)->val1 * AccelerationResolution[data->units.acceleration]);
+		(val)->val1 = data->acc.z / BNO055_ACCEL_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_ACCEL_RESOLUTION) * (data->acc.z - (val)->val1 * BNO055_ACCEL_RESOLUTION);
 		return 0;
 	}
 
 	if (chan == SENSOR_CHAN_ACCEL_XYZ) {
-		(val)->val1 = data->acc.x / AccelerationResolution[data->units.acceleration];
-		(val)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->acc.x - (val)->val1 * AccelerationResolution[data->units.acceleration]);
-		(val+1)->val1 = data->acc.y / AccelerationResolution[data->units.acceleration];
-		(val+1)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->acc.y - (val+1)->val1 * AccelerationResolution[data->units.acceleration]);
-		(val+2)->val1 = data->acc.z / AccelerationResolution[data->units.acceleration];
-		(val+2)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->acc.z - (val+2)->val1 * AccelerationResolution[data->units.acceleration]);
+		(val)->val1 = data->acc.x / BNO055_ACCEL_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_ACCEL_RESOLUTION) * (data->acc.x - (val)->val1 * BNO055_ACCEL_RESOLUTION);
+		(val+1)->val1 = data->acc.y / BNO055_ACCEL_RESOLUTION;
+		(val+1)->val2 = (1000000 / BNO055_ACCEL_RESOLUTION) * (data->acc.y - (val+1)->val1 * BNO055_ACCEL_RESOLUTION);
+		(val+2)->val1 = data->acc.z / BNO055_ACCEL_RESOLUTION;
+		(val+2)->val2 = (1000000 / BNO055_ACCEL_RESOLUTION) * (data->acc.z - (val+2)->val1 * BNO055_ACCEL_RESOLUTION);
 		return 0;
 	}
 
 	if (chan == (enum sensor_channel)SENSOR_CHAN_GYRO_X) {
-		(val)->val1 = data->gyr.x / RotationResolution[data->units.rotation];
-		(val)->val2 = (1000000 / RotationResolution[data->units.rotation]) * (data->gyr.x - (val)->val1 * RotationResolution[data->units.rotation]);
+		(val)->val1 = data->gyr.x / BNO055_GYRO_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_GYRO_RESOLUTION) * (data->gyr.x - (val)->val1 * BNO055_GYRO_RESOLUTION);
 		return 0;
 	}
 
 	if (chan == (enum sensor_channel)SENSOR_CHAN_GYRO_Y) {
-		(val)->val1 = data->gyr.y / RotationResolution[data->units.rotation];
-		(val)->val2 = (1000000 / RotationResolution[data->units.rotation]) * (data->gyr.y - (val)->val1 * RotationResolution[data->units.rotation]);
+		(val)->val1 = data->gyr.y / BNO055_GYRO_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_GYRO_RESOLUTION) * (data->gyr.y - (val)->val1 * BNO055_GYRO_RESOLUTION);
 		return 0;
 	}
 
 	if (chan == (enum sensor_channel)SENSOR_CHAN_GYRO_Z) {
-		(val)->val1 = data->gyr.z / RotationResolution[data->units.rotation];
-		(val)->val2 = (1000000 / RotationResolution[data->units.rotation]) * (data->gyr.z - (val)->val1 * RotationResolution[data->units.rotation]);
+		(val)->val1 = data->gyr.z / BNO055_GYRO_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_GYRO_RESOLUTION) * (data->gyr.z - (val)->val1 * BNO055_GYRO_RESOLUTION);
 		return 0;
 	}
 
 	if (chan == (enum sensor_channel)SENSOR_CHAN_GYRO_XYZ) {
-		(val)->val1 = data->gyr.x / RotationResolution[data->units.rotation];
-		(val)->val2 = (1000000 / RotationResolution[data->units.rotation]) * (data->gyr.x - (val)->val1 * RotationResolution[data->units.rotation]);
-		(val+1)->val1 = data->gyr.y / RotationResolution[data->units.rotation];
-		(val+1)->val2 = (1000000 / RotationResolution[data->units.rotation]) * (data->gyr.y - (val+1)->val1 * RotationResolution[data->units.rotation]);
-		(val+2)->val1 = data->gyr.z / RotationResolution[data->units.rotation];
-		(val+2)->val2 = (1000000 / RotationResolution[data->units.rotation]) * (data->gyr.z - (val+2)->val1 * RotationResolution[data->units.rotation]);
+		(val)->val1 = data->gyr.x / BNO055_GYRO_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_GYRO_RESOLUTION) * (data->gyr.x - (val)->val1 * BNO055_GYRO_RESOLUTION);
+		(val+1)->val1 = data->gyr.y / BNO055_GYRO_RESOLUTION;
+		(val+1)->val2 = (1000000 / BNO055_GYRO_RESOLUTION) * (data->gyr.y - (val+1)->val1 * BNO055_GYRO_RESOLUTION);
+		(val+2)->val1 = data->gyr.z / BNO055_GYRO_RESOLUTION;
+		(val+2)->val2 = (1000000 / BNO055_GYRO_RESOLUTION) * (data->gyr.z - (val+2)->val1 * BNO055_GYRO_RESOLUTION);
 		return 0;
 	}
 
 	if (chan == (enum sensor_channel)SENSOR_CHAN_MAGN_X) {
-		(val)->val1 = (BNO055_UTESLA_TO_GAUSS * data->mag.x) / uTeslaResolution;
-		(val)->val2 = (1000000 / uTeslaResolution) * ((BNO055_UTESLA_TO_GAUSS * data->mag.x) - (val)->val1 * uTeslaResolution);
+		(val)->val1 = (BNO055_UTESLA_TO_GAUSS * data->mag.x) / BNO055_UTESLA_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_UTESLA_RESOLUTION) * ((BNO055_UTESLA_TO_GAUSS * data->mag.x) - (val)->val1 * BNO055_UTESLA_RESOLUTION);
 		return 0;
 	}
 
 	if (chan == (enum sensor_channel)SENSOR_CHAN_MAGN_Y) {
-		(val)->val1 = (BNO055_UTESLA_TO_GAUSS * data->mag.y) / uTeslaResolution;
-		(val)->val2 = (1000000 / uTeslaResolution) * ((BNO055_UTESLA_TO_GAUSS * data->mag.y) - (val)->val1 * uTeslaResolution);
+		(val)->val1 = (BNO055_UTESLA_TO_GAUSS * data->mag.y) / BNO055_UTESLA_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_UTESLA_RESOLUTION) * ((BNO055_UTESLA_TO_GAUSS * data->mag.y) - (val)->val1 * BNO055_UTESLA_RESOLUTION);
 		return 0;
 	}
 
 	if (chan == (enum sensor_channel)SENSOR_CHAN_MAGN_Z) {
-		(val)->val1 = (BNO055_UTESLA_TO_GAUSS * data->mag.z) / uTeslaResolution;
-		(val)->val2 = (1000000 / uTeslaResolution) * ((BNO055_UTESLA_TO_GAUSS * data->mag.z) - (val)->val1 * uTeslaResolution);
+		(val)->val1 = (BNO055_UTESLA_TO_GAUSS * data->mag.z) / BNO055_UTESLA_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_UTESLA_RESOLUTION) * ((BNO055_UTESLA_TO_GAUSS * data->mag.z) - (val)->val1 * BNO055_UTESLA_RESOLUTION);
 		return 0;
 	}
 
 	if (chan == (enum sensor_channel)SENSOR_CHAN_MAGN_XYZ) {
-		(val)->val1 = (BNO055_UTESLA_TO_GAUSS * data->mag.x) / uTeslaResolution;
-		(val)->val2 = (1000000 / uTeslaResolution) * ((BNO055_UTESLA_TO_GAUSS * data->mag.x) - (val)->val1 * uTeslaResolution);
-		(val+1)->val1 = (BNO055_UTESLA_TO_GAUSS * data->mag.y) / uTeslaResolution;
-		(val+1)->val2 = (1000000 / uTeslaResolution) * ((BNO055_UTESLA_TO_GAUSS * data->mag.y) - (val+1)->val1 * uTeslaResolution);
-		(val+2)->val1 = (BNO055_UTESLA_TO_GAUSS * data->mag.z) / uTeslaResolution;
-		(val+2)->val2 = (1000000 / uTeslaResolution) * ((BNO055_UTESLA_TO_GAUSS * data->mag.z) - (val+2)->val1 * uTeslaResolution);
+		(val)->val1 = (BNO055_UTESLA_TO_GAUSS * data->mag.x) / BNO055_UTESLA_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_UTESLA_RESOLUTION) * ((BNO055_UTESLA_TO_GAUSS * data->mag.x) - (val)->val1 * BNO055_UTESLA_RESOLUTION);
+		(val+1)->val1 = (BNO055_UTESLA_TO_GAUSS * data->mag.y) / BNO055_UTESLA_RESOLUTION;
+		(val+1)->val2 = (1000000 / BNO055_UTESLA_RESOLUTION) * ((BNO055_UTESLA_TO_GAUSS * data->mag.y) - (val+1)->val1 * BNO055_UTESLA_RESOLUTION);
+		(val+2)->val1 = (BNO055_UTESLA_TO_GAUSS * data->mag.z) / BNO055_UTESLA_RESOLUTION;
+		(val+2)->val2 = (1000000 / BNO055_UTESLA_RESOLUTION) * ((BNO055_UTESLA_TO_GAUSS * data->mag.z) - (val+2)->val1 * BNO055_UTESLA_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_EULER_Y) {
-		(val)->val1 = data->eul.x / EulerResolution[data->units.euler];
-		(val)->val2 = (1000000 / EulerResolution[data->units.euler]) * (data->eul.x - (val)->val1 * EulerResolution[data->units.euler]);
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_EULER_Y) {
+		(val)->val1 = data->eul.x / BNO055_EULER_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_EULER_RESOLUTION) * (data->eul.x - (val)->val1 * BNO055_EULER_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_EULER_R) {
-		(val)->val1 = data->eul.y / EulerResolution[data->units.euler];
-		(val)->val2 = (1000000 / EulerResolution[data->units.euler]) * (data->eul.y - (val)->val1 * EulerResolution[data->units.euler]);
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_EULER_R) {
+		(val)->val1 = data->eul.y / BNO055_EULER_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_EULER_RESOLUTION) * (data->eul.y - (val)->val1 * BNO055_EULER_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_EULER_P) {
-		(val)->val1 = data->eul.z / EulerResolution[data->units.euler];
-		(val)->val2 = (1000000 / EulerResolution[data->units.euler]) * (data->eul.z - (val)->val1 * EulerResolution[data->units.euler]);
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_EULER_P) {
+		(val)->val1 = data->eul.z / BNO055_EULER_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_EULER_RESOLUTION) * (data->eul.z - (val)->val1 * BNO055_EULER_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_EULER_YRP) {
-		(val)->val1 = data->eul.x / EulerResolution[data->units.euler];
-		(val)->val2 = (1000000 / EulerResolution[data->units.euler]) * (data->eul.x - (val)->val1 * EulerResolution[data->units.euler]);
-		(val+1)->val1 = data->eul.y / EulerResolution[data->units.euler];
-		(val+1)->val2 = (1000000 / EulerResolution[data->units.euler]) * (data->eul.y - (val+1)->val1 * EulerResolution[data->units.euler]);
-		(val+2)->val1 = data->eul.z / EulerResolution[data->units.euler];
-		(val+2)->val2 = (1000000 / EulerResolution[data->units.euler]) * (data->eul.z - (val+2)->val1 * EulerResolution[data->units.euler]);
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_EULER_YRP) {
+		(val)->val1 = data->eul.x / BNO055_EULER_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_EULER_RESOLUTION) * (data->eul.x - (val)->val1 * BNO055_EULER_RESOLUTION);
+		(val+1)->val1 = data->eul.y / BNO055_EULER_RESOLUTION;
+		(val+1)->val2 = (1000000 / BNO055_EULER_RESOLUTION) * (data->eul.y - (val+1)->val1 * BNO055_EULER_RESOLUTION);
+		(val+2)->val1 = data->eul.z / BNO055_EULER_RESOLUTION;
+		(val+2)->val2 = (1000000 / BNO055_EULER_RESOLUTION) * (data->eul.z - (val+2)->val1 * BNO055_EULER_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_QUATERNION_W) {
-		(val)->val1 = data->qua.w / QuaternionResolution;
-		(val)->val2 = (1000000 / QuaternionResolution) * (data->qua.w - (val)->val1 * QuaternionResolution);
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_QUATERNION_W) {
+		(val)->val1 = data->qua.w / BNO055_QUATERNION_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_QUATERNION_RESOLUTION) * (data->qua.w - (val)->val1 * BNO055_QUATERNION_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_QUATERNION_X) {
-		(val)->val1 = data->qua.x / QuaternionResolution;
-		(val)->val2 = (1000000 / QuaternionResolution) * (data->qua.x - (val)->val1 * QuaternionResolution);
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_QUATERNION_X) {
+		(val)->val1 = data->qua.x / BNO055_QUATERNION_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_QUATERNION_RESOLUTION) * (data->qua.x - (val)->val1 * BNO055_QUATERNION_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_QUATERNION_Y) {
-		(val)->val1 = data->qua.y / QuaternionResolution;
-		(val)->val2 = (1000000 / QuaternionResolution) * (data->qua.y - (val)->val1 * QuaternionResolution);
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_QUATERNION_Y) {
+		(val)->val1 = data->qua.y / BNO055_QUATERNION_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_QUATERNION_RESOLUTION) * (data->qua.y - (val)->val1 * BNO055_QUATERNION_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_QUATERNION_Z) {
-		(val)->val1 = data->qua.z / QuaternionResolution;
-		(val)->val2 = (1000000 / QuaternionResolution) * (data->qua.z - (val)->val1 * QuaternionResolution);
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_QUATERNION_Z) {
+		(val)->val1 = data->qua.z / BNO055_QUATERNION_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_QUATERNION_RESOLUTION) * (data->qua.z - (val)->val1 * BNO055_QUATERNION_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_QUATERNION_WXYZ) {
-		(val)->val1 = data->qua.w / QuaternionResolution;
-		(val)->val2 = (1000000 / QuaternionResolution) * (data->qua.w - (val)->val1 * QuaternionResolution);
-		(val+1)->val1 = data->qua.x / QuaternionResolution;
-		(val+1)->val2 = (1000000 / QuaternionResolution) * (data->qua.x - (val+1)->val1 * QuaternionResolution);
-		(val+2)->val1 = data->qua.y / QuaternionResolution;
-		(val+2)->val2 = (1000000 / QuaternionResolution) * (data->qua.y - (val+2)->val1 * QuaternionResolution);
-		(val+3)->val1 = data->qua.z / QuaternionResolution;
-		(val+3)->val2 = (1000000 / QuaternionResolution) * (data->qua.z - (val+3)->val1 * QuaternionResolution);
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_QUATERNION_WXYZ) {
+		(val)->val1 = data->qua.w / BNO055_QUATERNION_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_QUATERNION_RESOLUTION) * (data->qua.w - (val)->val1 * BNO055_QUATERNION_RESOLUTION);
+		(val+1)->val1 = data->qua.x / BNO055_QUATERNION_RESOLUTION;
+		(val+1)->val2 = (1000000 / BNO055_QUATERNION_RESOLUTION) * (data->qua.x - (val+1)->val1 * BNO055_QUATERNION_RESOLUTION);
+		(val+2)->val1 = data->qua.y / BNO055_QUATERNION_RESOLUTION;
+		(val+2)->val2 = (1000000 / BNO055_QUATERNION_RESOLUTION) * (data->qua.y - (val+2)->val1 * BNO055_QUATERNION_RESOLUTION);
+		(val+3)->val1 = data->qua.z / BNO055_QUATERNION_RESOLUTION;
+		(val+3)->val2 = (1000000 / BNO055_QUATERNION_RESOLUTION) * (data->qua.z - (val+3)->val1 * BNO055_QUATERNION_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_LINEAR_ACCEL_X) {
-		(val)->val1 = data->lia.x / AccelerationResolution[data->units.acceleration];
-		(val)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->lia.x - (val)->val1 * AccelerationResolution[data->units.acceleration]);
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_LINEAR_ACCEL_X) {
+		(val)->val1 = data->lia.x / BNO055_ACCEL_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_ACCEL_RESOLUTION) * (data->lia.x - (val)->val1 * BNO055_ACCEL_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_LINEAR_ACCEL_Y) {
-		(val)->val1 = data->lia.y / AccelerationResolution[data->units.acceleration];
-		(val)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->lia.y - (val)->val1 * AccelerationResolution[data->units.acceleration]);
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_LINEAR_ACCEL_Y) {
+		(val)->val1 = data->lia.y / BNO055_ACCEL_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_ACCEL_RESOLUTION) * (data->lia.y - (val)->val1 * BNO055_ACCEL_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_LINEAR_ACCEL_Z) {
-		(val)->val1 = data->lia.z / AccelerationResolution[data->units.acceleration];
-		(val)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->lia.z - (val)->val1 * AccelerationResolution[data->units.acceleration]);
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_LINEAR_ACCEL_Z) {
+		(val)->val1 = data->lia.z / BNO055_ACCEL_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_ACCEL_RESOLUTION) * (data->lia.z - (val)->val1 * BNO055_ACCEL_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_LINEAR_ACCEL_XYZ) {
-		(val)->val1 = data->lia.x / AccelerationResolution[data->units.acceleration];
-		(val)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->lia.x - (val)->val1 * AccelerationResolution[data->units.acceleration]);
-		(val+1)->val1 = data->lia.y / AccelerationResolution[data->units.acceleration];
-		(val+1)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->lia.y - (val+1)->val1 * AccelerationResolution[data->units.acceleration]);
-		(val+2)->val1 = data->lia.z / AccelerationResolution[data->units.acceleration];
-		(val+2)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->lia.z - (val+2)->val1 * AccelerationResolution[data->units.acceleration]);
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_LINEAR_ACCEL_XYZ) {
+		(val)->val1 = data->lia.x / BNO055_ACCEL_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_ACCEL_RESOLUTION) * (data->lia.x - (val)->val1 * BNO055_ACCEL_RESOLUTION);
+		(val+1)->val1 = data->lia.y / BNO055_ACCEL_RESOLUTION;
+		(val+1)->val2 = (1000000 / BNO055_ACCEL_RESOLUTION) * (data->lia.y - (val+1)->val1 * BNO055_ACCEL_RESOLUTION);
+		(val+2)->val1 = data->lia.z / BNO055_ACCEL_RESOLUTION;
+		(val+2)->val2 = (1000000 / BNO055_ACCEL_RESOLUTION) * (data->lia.z - (val+2)->val1 * BNO055_ACCEL_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_GRAVITY_X) {
-		(val)->val1 = data->grv.x / AccelerationResolution[data->units.acceleration];
-		(val)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->grv.x - (val)->val1 * AccelerationResolution[data->units.acceleration]);
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_GRAVITY_X) {
+		(val)->val1 = data->grv.x / BNO055_ACCEL_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_ACCEL_RESOLUTION) * (data->grv.x - (val)->val1 * BNO055_ACCEL_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_GRAVITY_Y) {
-		(val)->val1 = data->grv.y / AccelerationResolution[data->units.acceleration];
-		(val)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->grv.y - (val)->val1 * AccelerationResolution[data->units.acceleration]);
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_GRAVITY_Y) {
+		(val)->val1 = data->grv.y / BNO055_ACCEL_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_ACCEL_RESOLUTION) * (data->grv.y - (val)->val1 * BNO055_ACCEL_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_GRAVITY_Z) {
-		(val)->val1 = data->grv.z / AccelerationResolution[data->units.acceleration];
-		(val)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->grv.z - (val)->val1 * AccelerationResolution[data->units.acceleration]);
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_GRAVITY_Z) {
+		(val)->val1 = data->grv.z / BNO055_ACCEL_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_ACCEL_RESOLUTION) * (data->grv.z - (val)->val1 * BNO055_ACCEL_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_GRAVITY_XYZ) {
-		(val)->val1 = data->grv.x / AccelerationResolution[data->units.acceleration];
-		(val)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->grv.x - (val)->val1 * AccelerationResolution[data->units.acceleration]);
-		(val+1)->val1 = data->grv.y / AccelerationResolution[data->units.acceleration];
-		(val+1)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->grv.y - (val+1)->val1 * AccelerationResolution[data->units.acceleration]);
-		(val+2)->val1 = data->grv.z / AccelerationResolution[data->units.acceleration];
-		(val+2)->val2 = (1000000 / AccelerationResolution[data->units.acceleration]) * (data->grv.z - (val+2)->val1 * AccelerationResolution[data->units.acceleration]);
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_GRAVITY_XYZ) {
+		(val)->val1 = data->grv.x / BNO055_ACCEL_RESOLUTION;
+		(val)->val2 = (1000000 / BNO055_ACCEL_RESOLUTION) * (data->grv.x - (val)->val1 * BNO055_ACCEL_RESOLUTION);
+		(val+1)->val1 = data->grv.y / BNO055_ACCEL_RESOLUTION;
+		(val+1)->val2 = (1000000 / BNO055_ACCEL_RESOLUTION) * (data->grv.y - (val+1)->val1 * BNO055_ACCEL_RESOLUTION);
+		(val+2)->val1 = data->grv.z / BNO055_ACCEL_RESOLUTION;
+		(val+2)->val2 = (1000000 / BNO055_ACCEL_RESOLUTION) * (data->grv.z - (val+2)->val1 * BNO055_ACCEL_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_CALIBRATION_SYS) {
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_CALIBRATION_SYS) {
 		(val)->val1 = data->calib.sys;
 		(val)->val2 = 0;
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_CALIBRATION_GYR) {
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_CALIBRATION_GYR) {
 		(val)->val1 = data->calib.gyr;
 		(val)->val2 = 0;
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_CALIBRATION_ACC) {
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_CALIBRATION_ACC) {
 		(val)->val1 = data->calib.acc;
 		(val)->val2 = 0;
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_CALIBRATION_MAG) {
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_CALIBRATION_MAG) {
 		(val)->val1 = data->calib.mag;
 		(val)->val2 = 0;
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_CALIBRATION_SGAM) {
+	if (chan == (enum sensor_channel)BNO055_SENSOR_CHAN_CALIBRATION_SGAM) {
 		(val)->val1 = data->calib.sys;
 		(val)->val2 = 0;
 		(val+1)->val1 = data->calib.gyr;
@@ -746,18 +745,18 @@ static int bno055_init(const struct device *dev)
 	int err;
 
 	/* Switch to Page 0 */
-	err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, PAGE_ZERO);
+	err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, BNO055_PAGE_ZERO);
 	if (err < 0) {
 		return err;
 	}
-	data->current_page = PAGE_ZERO;
+	data->current_page = BNO055_PAGE_ZERO;
 	
 	/* Send Reset Command */ // GOOD IDEA??
 	err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_SYS_TRIGGER, BNO055_COMMAND_RESET);
 	if (err < 0) {
 		return err;
 	}
-	data->mode = CONFIG_MODE;
+	data->mode = BNO055_MODE_CONFIG;
 	k_sleep(K_MSEC(BNO055_TIMING_RESET_CONFIG));
 
 	/* Check for chip id to validate the power on of the sensor */
@@ -781,16 +780,11 @@ static int bno055_init(const struct device *dev)
 	}
 
 	/* Configure Unit according to Zephyr */
-	data->units.orientation = WINDOWS;
-	data->units.temp = CELSIUS;
-	data->units.euler = RADIANS;
-	data->units.rotation = RPS;
-	data->units.acceleration = MS_2;
-	uint8_t selection = (data->units.orientation << 7)	|
-						(data->units.temp << 4)			|
-						(data->units.euler << 2)		|
-						(data->units.rotation << 1)		|
-						(data->units.acceleration << 0);
+	uint8_t selection = (BNO055_ORIENTATION_WINDOWS << 7)	|
+						(BNO055_TEMP_UNIT_CELSIUS << 4)		|
+						(BNO055_EULER_UNIT_RADIANS << 2)	|
+						(BNO055_GYRO_UNIT_RPS << 1)			|
+						(BNO055_ACCEL_UNIT_MS_2 << 0);
 	err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_UNIT_SELECT, selection);
 	if (err < 0) {
 		return err;

@@ -8,32 +8,32 @@
 
 /* BNO055 Specific channels */
 enum bno055_sensor_channel {
-    SENSOR_CHAN_EULER_Y             = SENSOR_CHAN_PRIV_START + 0,
-    SENSOR_CHAN_EULER_R             = SENSOR_CHAN_PRIV_START + 1,
-    SENSOR_CHAN_EULER_P             = SENSOR_CHAN_PRIV_START + 2,
-    SENSOR_CHAN_EULER_YRP           = SENSOR_CHAN_PRIV_START + 3,
+    BNO055_SENSOR_CHAN_EULER_Y          = SENSOR_CHAN_PRIV_START + 0,
+    BNO055_SENSOR_CHAN_EULER_R          = SENSOR_CHAN_PRIV_START + 1,
+    BNO055_SENSOR_CHAN_EULER_P          = SENSOR_CHAN_PRIV_START + 2,
+    BNO055_SENSOR_CHAN_EULER_YRP        = SENSOR_CHAN_PRIV_START + 3,
 
-    SENSOR_CHAN_QUATERNION_W        = SENSOR_CHAN_PRIV_START + 4,
-    SENSOR_CHAN_QUATERNION_X        = SENSOR_CHAN_PRIV_START + 5,
-    SENSOR_CHAN_QUATERNION_Y        = SENSOR_CHAN_PRIV_START + 6,
-    SENSOR_CHAN_QUATERNION_Z        = SENSOR_CHAN_PRIV_START + 7,
-    SENSOR_CHAN_QUATERNION_WXYZ     = SENSOR_CHAN_PRIV_START + 8,
+    BNO055_SENSOR_CHAN_QUATERNION_W     = SENSOR_CHAN_PRIV_START + 4,
+    BNO055_SENSOR_CHAN_QUATERNION_X     = SENSOR_CHAN_PRIV_START + 5,
+    BNO055_SENSOR_CHAN_QUATERNION_Y     = SENSOR_CHAN_PRIV_START + 6,
+    BNO055_SENSOR_CHAN_QUATERNION_Z     = SENSOR_CHAN_PRIV_START + 7,
+    BNO055_SENSOR_CHAN_QUATERNION_WXYZ  = SENSOR_CHAN_PRIV_START + 8,
 
-    SENSOR_CHAN_LINEAR_ACCEL_X      = SENSOR_CHAN_PRIV_START + 9,
-    SENSOR_CHAN_LINEAR_ACCEL_Y      = SENSOR_CHAN_PRIV_START + 10,
-    SENSOR_CHAN_LINEAR_ACCEL_Z      = SENSOR_CHAN_PRIV_START + 11,
-    SENSOR_CHAN_LINEAR_ACCEL_XYZ    = SENSOR_CHAN_PRIV_START + 12,
+    BNO055_SENSOR_CHAN_LINEAR_ACCEL_X   = SENSOR_CHAN_PRIV_START + 9,
+    BNO055_SENSOR_CHAN_LINEAR_ACCEL_Y   = SENSOR_CHAN_PRIV_START + 10,
+    BNO055_SENSOR_CHAN_LINEAR_ACCEL_Z   = SENSOR_CHAN_PRIV_START + 11,
+    BNO055_SENSOR_CHAN_LINEAR_ACCEL_XYZ = SENSOR_CHAN_PRIV_START + 12,
 
-    SENSOR_CHAN_GRAVITY_X           = SENSOR_CHAN_PRIV_START + 13,
-    SENSOR_CHAN_GRAVITY_Y           = SENSOR_CHAN_PRIV_START + 14,
-    SENSOR_CHAN_GRAVITY_Z           = SENSOR_CHAN_PRIV_START + 15,
-    SENSOR_CHAN_GRAVITY_XYZ         = SENSOR_CHAN_PRIV_START + 16,
+    BNO055_SENSOR_CHAN_GRAVITY_X        = SENSOR_CHAN_PRIV_START + 13,
+    BNO055_SENSOR_CHAN_GRAVITY_Y        = SENSOR_CHAN_PRIV_START + 14,
+    BNO055_SENSOR_CHAN_GRAVITY_Z        = SENSOR_CHAN_PRIV_START + 15,
+    BNO055_SENSOR_CHAN_GRAVITY_XYZ      = SENSOR_CHAN_PRIV_START + 16,
 
-    SENSOR_CHAN_CALIBRATION_SYS     = SENSOR_CHAN_PRIV_START + 17,
-    SENSOR_CHAN_CALIBRATION_GYR     = SENSOR_CHAN_PRIV_START + 18,
-    SENSOR_CHAN_CALIBRATION_ACC     = SENSOR_CHAN_PRIV_START + 19,
-    SENSOR_CHAN_CALIBRATION_MAG     = SENSOR_CHAN_PRIV_START + 20,
-    SENSOR_CHAN_CALIBRATION_SGAM    = SENSOR_CHAN_PRIV_START + 21
+    BNO055_SENSOR_CHAN_CALIBRATION_SYS  = SENSOR_CHAN_PRIV_START + 17,
+    BNO055_SENSOR_CHAN_CALIBRATION_GYR  = SENSOR_CHAN_PRIV_START + 18,
+    BNO055_SENSOR_CHAN_CALIBRATION_ACC  = SENSOR_CHAN_PRIV_START + 19,
+    BNO055_SENSOR_CHAN_CALIBRATION_MAG  = SENSOR_CHAN_PRIV_START + 20,
+    BNO055_SENSOR_CHAN_CALIBRATION_SGAM = SENSOR_CHAN_PRIV_START + 21
 };
 
 /* Registers (PAGE 0) */
@@ -230,7 +230,7 @@ enum bno055_sensor_channel {
 #define BNO055_REGISTER_GYR_HIGH_RATE_Z_SET         0x1C
 #define BNO055_REGISTER_GYR_DURATION_Z              0x1D
 #define BNO055_REGISTER_GYR_ANY_MOTION_THRESHOLD    0x1E
-#define BNO055_REGISTER_GYR_ANY_MOTION_SET          0x1F
+#define REGISTER_GYR_ANY_MOTION_SET          0x1F
 
 #define BNO055_CHIP_ID 0xA0
 #define BNO055_         0
@@ -240,39 +240,25 @@ enum bno055_sensor_channel {
 #define BNO055_COMMAND_XTAL     0x80
 
 /* Timings */
-#define BNO055_TIMING_STARTUP               500 // 400ms
-#define BNO055_TIMING_RESET_CONFIG          800 // 650ms
+#define BNO055_TIMING_STARTUP               400 // 400ms
+#define BNO055_TIMING_RESET_CONFIG          650 // 650ms
 #define BNO055_TIMING_SWITCH_FROM_CONFIG    10 // 7 ms
 #define BNO055_TIMING_SWITCH_FROM_ANY       20 // 19 ms
 
-/* BNO055 Configuration */
-enum PageId {
-    PAGE_ZERO    = 0x00,
-    PAGE_ONE     = 0x01
-};
+/* Unit Selection Configuration */
+#define BNO055_ORIENTATION_WINDOWS  0x00 // clockwise pitch
+#define BNO055_TEMP_UNIT_CELSIUS 0x00 // CELSIUS
+#define BNO055_EULER_UNIT_RADIANS 0x01 // RADIANS
+#define BNO055_GYRO_UNIT_RPS 0x01 // RPS
+#define BNO055_ACCEL_UNIT_MS_2 0x00 // MS_2
 
-enum PowerMode {
-    NORMAL      = 0x00,
-    LOW_POWER   = 0x01,
-    SUSPEND     = 0x02,
-    INVALID     = 0x03
-};
-
-enum OperatingMode {
-    CONFIG_MODE     = 0x00,
-    ACC_ONLY        = 0x01,
-    MAG_ONLY        = 0x02,
-    GYRO_ONLY       = 0x03,
-    ACC_MAG         = 0x04,
-    ACC_GYRO        = 0x05,
-    MAG_GYRO        = 0x06,
-    ACC_MAG_GYRO    = 0x07,
-    IMU             = 0x08, // Relative orientation from ACC + GYR | Fast calculation (high rate output)
-    COMPASS         = 0x09,
-    M4G             = 0x0A, // Like IMU but replace GYR by MAG | much less power consumption
-    NDOF_FMC_OFF    = 0x0B,
-    NDOF            = 0x0C  // Fast MAG calibration ON | slightly higher consumption than NDOF_FMC_OFF
-};
+/* Unit Resolution */
+#define BNO055_EULER_RESOLUTION 900 // RADIANS
+#define BNO055_QUATERNION_RESOLUTION 16384 // Unitless
+#define BNO055_UTESLA_TO_GAUSS 100
+#define BNO055_UTESLA_RESOLUTION 16
+#define BNO055_GYRO_RESOLUTION 900 // RPS
+#define BNO055_ACCEL_RESOLUTION 100 // MS_2
 
 /* Accelerometer Configuration */
 #define BNO055_ACC_2G   0x00
@@ -315,9 +301,6 @@ enum OperatingMode {
 #define BNO055_MAG_SLEEP        0x01
 #define BNO055_MAG_SUSPEND      0x02
 #define BNO055_MAG_FORCE_MODE   0x03
-
-#define BNO055_UTESLA_TO_GAUSS 100
-static const uint16_t uTeslaResolution = 16;
 
 /* Gyroscope Configuration */
 #define BNO055_GYR_2000DPS  0x00
@@ -485,45 +468,33 @@ static const uint16_t uTeslaResolution = 16;
 #define BNO055_GYR_POWER        BNO055_GYR_NORMAL
 #endif
 
-/* Unit Selection Configuration */
-enum Orientation { // Pitch relative
-    WINDOWS = 0x00, // clockwise
-    ANDROID = 0x01  // anti-clockwise (trigonometric)
+/* BNO055 Configuration */
+enum PageId {
+    BNO055_PAGE_ZERO    = 0x00,
+    BNO055_PAGE_ONE     = 0x01
 };
 
-enum TemperatureUnit {
-    CELSIUS     = 0x00,
-    FAHRENHEIT  = 0x01
+enum PowerMode {
+    BNO055_POWER_NORMAL       = 0x00,
+    BNO055_POWER_LOW_POWER    = 0x01,
+    BNO055_POWER_SUSPEND      = 0x02,
+    BNO055_POWER_INVALID      = 0x03
 };
 
-enum EulerUnit {
-    DEGREES = 0x00,
-    RADIANS = 0x01
-};
-
-static const uint16_t EulerResolution[2] = {16, 900}; // DEGREES | RADIANS
-static const uint16_t QuaternionResolution = 16384;
-
-enum RotationUnit {
-    DPS = 0x00,
-    RPS = 0x01
-};
-
-static const uint16_t RotationResolution[2] = {16, 900}; // DPS | RPS
-
-enum AccelerationUnit {
-    MS_2    = 0x00,
-    MG      = 0x01
-};
-
-static const uint16_t AccelerationResolution[2] = {100, 1}; // MS_2 | MG
-
-struct unit_config {
-    enum Orientation        orientation;
-    enum TemperatureUnit    temp;
-    enum EulerUnit          euler;
-    enum RotationUnit       rotation;
-    enum AccelerationUnit   acceleration;
+enum OperatingMode {
+    BNO055_MODE_CONFIG          = 0x00,
+    BNO055_MODE_ACC_ONLY        = 0x01,
+    BNO055_MODE_MAG_ONLY        = 0x02,
+    BNO055_MODE_GYRO_ONLY       = 0x03,
+    BNO055_MODE_ACC_MAG         = 0x04,
+    BNO055_MODE_ACC_GYRO        = 0x05,
+    BNO055_MODE_MAG_GYRO        = 0x06,
+    BNO055_MODE_ACC_MAG_GYRO    = 0x07,
+    BNO055_MODE_IMU             = 0x08, // Relative orientation from ACC + GYR | Fast calculation (high rate output)
+    BNO055_MODE_COMPASS         = 0x09,
+    BNO055_MODE_M4G             = 0x0A, // Like IMU but replace GYR by MAG | much less power consumption
+    BNO055_MODE_NDOF_FMC_OFF    = 0x0B,
+    BNO055_MODE_NDOF            = 0x0C  // Fast MAG calibration ON | slightly higher consumption than NDOF_FMC_OFF
 };
 
 /* Data structures */
