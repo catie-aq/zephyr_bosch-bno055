@@ -741,7 +741,6 @@ static int bno055_init(const struct device *dev)
 
 	LOG_INF("CONFIG");
 	LOG_INF("USE XTAL [%d]", config->use_xtal);
-	// /!\ To DO: LOG_INF sensors config
 	int err;
 
 	/* Switch to Page 0 */
@@ -751,7 +750,7 @@ static int bno055_init(const struct device *dev)
 	}
 	data->current_page = BNO055_PAGE_ZERO;
 	
-	/* Send Reset Command */ // GOOD IDEA??
+	/* Send Reset Command */
 	err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_SYS_TRIGGER, BNO055_COMMAND_RESET);
 	if (err < 0) {
 		return err;
@@ -796,8 +795,6 @@ static int bno055_init(const struct device *dev)
 			return err;
 		}
 	}
-
-	// /!\ To DO: Check BIST result of Power on Self Test
 
 	return 0;
 }
