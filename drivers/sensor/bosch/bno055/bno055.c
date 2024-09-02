@@ -15,7 +15,7 @@ LOG_MODULE_REGISTER(BNO055, CONFIG_SENSOR_LOG_LEVEL);
 
 struct bno055_config {
 	struct i2c_dt_spec i2c_bus;
-	uint8_t use_xtal;
+	bool use_xtal;
 };
 
 struct bno055_data {
