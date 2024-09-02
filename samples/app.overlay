@@ -11,6 +11,6 @@
 	bno0550: bno055@28 {
 		compatible = "bosch,bno055";
 		reg = <0x28>;
-		use_xtal = <1>;
+		use_xtal;
 	};
 };

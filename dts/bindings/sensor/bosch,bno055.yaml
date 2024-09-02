@@ -11,10 +11,6 @@ include:
 
 properties:
     use_xtal:
-        type: int
-        default: 0
+        type: boolean
         description: |
-            Sensor crystal source.
-        enum:
-        - 1
-        - 0
+            Enable the use of external crystal.
