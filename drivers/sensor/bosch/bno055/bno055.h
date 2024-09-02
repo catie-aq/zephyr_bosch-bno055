@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_DRIVERS_SENSOR_BNO055_BNO055_H_
-#define ZEPHYR_DRIVERS_SENSOR_BNO055_BNO055_H_
+#ifndef ZEPHYR_DRIVERS_SENSOR_BNO055_H_
+#define ZEPHYR_DRIVERS_SENSOR_BNO055_H_
 
 /* BNO055 Specific channels */
 enum bno055_sensor_channel {
@@ -535,4 +535,4 @@ struct calib_data {
 #define BNO055_CALIBRATION_FULL 0x03
 #define BNO055_CALIBRATION_NONE 0x00
 
-#endif /* ZEPHYR_DRIVERS_SENSOR_BNO055_BNO055_H_ */
+#endif /* ZEPHYR_DRIVERS_SENSOR_BNO055_H_ */
