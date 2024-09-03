@@ -566,25 +566,25 @@ static int bno055_channel_get(const struct device *dev, enum sensor_channel chan
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_GYRO_X) {
+	if (chan == SENSOR_CHAN_GYRO_X) {
 		(val)->val1 = data->gyr.x / BNO055_GYRO_RESOLUTION;
 		(val)->val2 = (1000000 / BNO055_GYRO_RESOLUTION) * (data->gyr.x - (val)->val1 * BNO055_GYRO_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_GYRO_Y) {
+	if (chan == SENSOR_CHAN_GYRO_Y) {
 		(val)->val1 = data->gyr.y / BNO055_GYRO_RESOLUTION;
 		(val)->val2 = (1000000 / BNO055_GYRO_RESOLUTION) * (data->gyr.y - (val)->val1 * BNO055_GYRO_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_GYRO_Z) {
+	if (chan == SENSOR_CHAN_GYRO_Z) {
 		(val)->val1 = data->gyr.z / BNO055_GYRO_RESOLUTION;
 		(val)->val2 = (1000000 / BNO055_GYRO_RESOLUTION) * (data->gyr.z - (val)->val1 * BNO055_GYRO_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_GYRO_XYZ) {
+	if (chan == SENSOR_CHAN_GYRO_XYZ) {
 		(val)->val1 = data->gyr.x / BNO055_GYRO_RESOLUTION;
 		(val)->val2 = (1000000 / BNO055_GYRO_RESOLUTION) * (data->gyr.x - (val)->val1 * BNO055_GYRO_RESOLUTION);
 		(val+1)->val1 = data->gyr.y / BNO055_GYRO_RESOLUTION;
@@ -594,25 +594,25 @@ static int bno055_channel_get(const struct device *dev, enum sensor_channel chan
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_MAGN_X) {
+	if (chan == SENSOR_CHAN_MAGN_X) {
 		(val)->val1 = (BNO055_UTESLA_TO_GAUSS * data->mag.x) / BNO055_UTESLA_RESOLUTION;
 		(val)->val2 = (1000000 / BNO055_UTESLA_RESOLUTION) * ((BNO055_UTESLA_TO_GAUSS * data->mag.x) - (val)->val1 * BNO055_UTESLA_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_MAGN_Y) {
+	if (chan == SENSOR_CHAN_MAGN_Y) {
 		(val)->val1 = (BNO055_UTESLA_TO_GAUSS * data->mag.y) / BNO055_UTESLA_RESOLUTION;
 		(val)->val2 = (1000000 / BNO055_UTESLA_RESOLUTION) * ((BNO055_UTESLA_TO_GAUSS * data->mag.y) - (val)->val1 * BNO055_UTESLA_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_MAGN_Z) {
+	if (chan == SENSOR_CHAN_MAGN_Z) {
 		(val)->val1 = (BNO055_UTESLA_TO_GAUSS * data->mag.z) / BNO055_UTESLA_RESOLUTION;
 		(val)->val2 = (1000000 / BNO055_UTESLA_RESOLUTION) * ((BNO055_UTESLA_TO_GAUSS * data->mag.z) - (val)->val1 * BNO055_UTESLA_RESOLUTION);
 		return 0;
 	}
 
-	if (chan == (enum sensor_channel)SENSOR_CHAN_MAGN_XYZ) {
+	if (chan == SENSOR_CHAN_MAGN_XYZ) {
 		(val)->val1 = (BNO055_UTESLA_TO_GAUSS * data->mag.x) / BNO055_UTESLA_RESOLUTION;
 		(val)->val2 = (1000000 / BNO055_UTESLA_RESOLUTION) * ((BNO055_UTESLA_TO_GAUSS * data->mag.x) - (val)->val1 * BNO055_UTESLA_RESOLUTION);
 		(val+1)->val1 = (BNO055_UTESLA_TO_GAUSS * data->mag.y) / BNO055_UTESLA_RESOLUTION;
