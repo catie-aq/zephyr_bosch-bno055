@@ -24,6 +24,8 @@ int main(void)
 		.val2 = 0,
 	};
 	sensor_attr_set(dev, SENSOR_CHAN_ALL, SENSOR_ATTR_CONFIGURATION, &config);
+	config.val1 = BNO055_POWER_NORMAL;
+	sensor_attr_set(dev, SENSOR_CHAN_ALL, BNO055_SENSOR_ATTR_POWER_MODE, &config);
 
 	while (1) {
 		sensor_sample_fetch(dev);

@@ -21,6 +21,7 @@ struct bno055_config {
 struct bno055_data {
 	uint8_t current_page;
 	enum OperatingMode mode;
+	enum PowerMode power;
 
 	struct vector3_data acc;
 	struct vector3_data mag;
@@ -115,6 +116,30 @@ static int bno055_set_config(const struct device *dev, enum OperatingMode mode, 
 	k_sleep(K_MSEC(BNO055_TIMING_SWITCH_FROM_CONFIG));
 
 	data->mode = mode;
+	return 0;
+}
+
+static int bno055_set_power(const struct device *dev, enum PowerMode power)
+{
+	struct bno055_data *data = dev->data;
+	if (data->power == power) {
+		return 0;
+	}
+
+	const struct bno055_config *config = dev->config;
+	int err;
+
+	enum OperatingMode mode = data->mode;
+	err = bno055_set_config(dev, BNO055_MODE_CONFIG, false);
+	if (err < 0) return err;
+
+	err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_POWER_MODE, power);
+	if (err < 0) return err;
+	data->power = power;
+
+	err = bno055_set_config(dev, mode, mode < BNO055_MODE_IMU ? false : true);
+	if (err < 0) return err;
+
 	return 0;
 }
 
@@ -247,11 +272,38 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 					default:
 						return -ENOTSUP;
 				}
+			} else if (attr == (enum sensor_attribute)BNO055_SENSOR_ATTR_POWER_MODE) {
+				switch (val->val1)
+				{
+					case BNO055_POWER_NORMAL:
+						err = bno055_set_power(dev, BNO055_POWER_NORMAL);
+						if (err < 0) return err;
+						break;
+					
+					case BNO055_POWER_LOW_POWER:
+						err = bno055_set_power(dev, BNO055_POWER_LOW_POWER);
+						if (err < 0) return err;
+						break;
+
+					case BNO055_POWER_SUSPEND:
+						err = bno055_set_power(dev, BNO055_POWER_SUSPEND);
+						if (err < 0) return err;
+						break;
+					
+					case BNO055_POWER_INVALID:
+						err = bno055_set_power(dev, BNO055_POWER_INVALID);
+						if (err < 0) return err;
+						break;
+				
+					default:
+						return -ENOTSUP;
+				}
 			}
+			
 			break;
 		
 		default:
-			break;
+			return -ENOTSUP;
 	}
 	return 0;
 }

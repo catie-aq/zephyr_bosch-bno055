@@ -36,6 +36,11 @@ enum bno055_sensor_channel {
     BNO055_SENSOR_CHAN_CALIBRATION_SGAM = SENSOR_CHAN_PRIV_START + 21
 };
 
+/* BNO055 Specific attibute */
+enum bno055_sensor_attribute {
+    BNO055_SENSOR_ATTR_POWER_MODE   = SENSOR_ATTR_PRIV_START + 0,
+};
+
 /* Registers (PAGE 0) */
 #define BNO055_REGISTER_PAGE_ID	0x07
 
