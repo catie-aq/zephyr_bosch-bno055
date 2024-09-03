@@ -270,7 +270,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 						break;
 					
 					default:
-						return -ENOTSUP;
+						return -EINVAL;
 				}
 			} else if (attr == (enum sensor_attribute)BNO055_SENSOR_ATTR_POWER_MODE) {
 				switch (val->val1)
@@ -296,7 +296,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 						break;
 				
 					default:
-						return -ENOTSUP;
+						return -EINVAL;
 				}
 			}
 			
