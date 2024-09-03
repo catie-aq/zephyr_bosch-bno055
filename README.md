@@ -18,7 +18,7 @@ Implemented feature:
 * [X] Linear Acceleration Fusion channels getter
 * [X] Gravity Fusion channels getter
 * [X] Calibration Status getter
-* [ ] Axis remapping configuration (sensor_attr)
+* [ ] Axis remapping configuration (DeviceTree)
 * [ ] Interrupt configuration (attr + DeviceTree)
 * [ ] Offset configuration (sensor_attr)
 * [ ] SIC Matrix support
