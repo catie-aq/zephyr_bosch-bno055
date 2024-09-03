@@ -6,7 +6,7 @@ Based on [BNO055 Datasheet](https://www.bosch-sensortec.com/media/boschsensortec
 Implemented feature:
 
 * [X] BNO055 Operating mode configuration (sensor_attr)
-* [ ] BNO055 Power mode configuration (sensor_attr)
+* [X] BNO055 Power mode configuration (sensor_attr)
 * [X] Xtal property configuration (DeviceTree)
 * [X] Kconfig custom sensors configuration (Accelerometer, Magnetometer, Gyroscope)
 * [X] Sample fetch interface (according to BNO055 Operating mode)
