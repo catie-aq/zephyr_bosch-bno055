@@ -10,6 +10,10 @@ include:
   - name: i2c-device.yaml
 
 properties:
+    irq-gpios:
+        type: phandle-array
+        description: Configures BNO055 interrupt signal.
+
     use_xtal:
         type: boolean
         description: |
