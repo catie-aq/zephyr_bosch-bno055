@@ -306,4 +306,9 @@ endchoice
 
 endif # BNO055_GYR_CUSTOM_CONFIG
 
+config BNO055_TRIGGER
+    bool "IRQ Trigger"
+    help
+      Enable IRQ gpio to trigger software interruption.
+
 endif # BNO055
