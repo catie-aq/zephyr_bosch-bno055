@@ -38,27 +38,19 @@ int main(void)
 		sensor_channel_get(dev, BNO055_SENSOR_CHAN_CALIBRATION_SGAM, calib);
 
 		printk("LINACCEL: X(m.s-2)[%d.%06d] Y(m.s-2)[%d.%06d] Z(m.s-2)[%d.%06d]\n",
-				lia[0].val1, lia[0].val2,
-				lia[1].val1, lia[1].val2,
-				lia[2].val1, lia[2].val2);
+		       lia[0].val1, lia[0].val2, lia[1].val1, lia[1].val2, lia[2].val1,
+		       lia[2].val2);
 		printk("GRAVITY: X(m.s-2)[%d.%06d] Y(m.s-2)[%d.%06d] Z(m.s-2)[%d.%06d]\n",
-				grav[0].val1, grav[0].val2,
-				grav[1].val1, grav[1].val2,
-				grav[2].val1, grav[2].val2);
+		       grav[0].val1, grav[0].val2, grav[1].val1, grav[1].val2, grav[2].val1,
+		       grav[2].val2);
 		printk("EULER: X(rad.s-1)[%d.%06d] Y(rad.s-1)[%d.%06d] Z(rad.s-1)[%d.%06d]\n",
-				eul[0].val1, eul[0].val2,
-				eul[1].val1, eul[1].val2,
-				eul[2].val1, eul[2].val2);
-		printk("QUATERNION: W[%d.%06d] X[%d.%06d] Y[%d.%06d] Z[%d.%06d]\n",
-				quat[0].val1, quat[0].val2,
-				quat[1].val1, quat[1].val2,
-				quat[2].val1, quat[2].val2,
-				quat[2].val1, quat[2].val2);
-		printk("CALIB: SYS[%d] GYR[%d] ACC[%d] MAG[%d]\n",
-				calib[0].val1,
-				calib[1].val1,
-				calib[2].val1,
-				calib[3].val1);
+		       eul[0].val1, eul[0].val2, eul[1].val1, eul[1].val2, eul[2].val1,
+		       eul[2].val2);
+		printk("QUATERNION: W[%d.%06d] X[%d.%06d] Y[%d.%06d] Z[%d.%06d]\n", quat[0].val1,
+		       quat[0].val2, quat[1].val1, quat[1].val2, quat[2].val1, quat[2].val2,
+		       quat[2].val1, quat[2].val2);
+		printk("CALIB: SYS[%d] GYR[%d] ACC[%d] MAG[%d]\n", calib[0].val1, calib[1].val1,
+		       calib[2].val1, calib[3].val1);
 
 		k_sleep(K_MSEC(500));
 	}
