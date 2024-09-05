@@ -7,6 +7,7 @@
 
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/drivers/i2c.h>
+#include <zephyr/drivers/gpio.h>
 #include <zephyr/logging/log.h>
 
 #include "bno055.h"
@@ -16,6 +17,10 @@ LOG_MODULE_REGISTER(BNO055, CONFIG_SENSOR_LOG_LEVEL);
 struct bno055_config {
 	struct i2c_dt_spec i2c_bus;
 	bool use_xtal;
+
+#if BNO055_USE_IRQ
+	const struct gpio_dt_spec irq_gpio;
+#endif
 };
 
 struct bno055_data {
@@ -33,6 +38,14 @@ struct bno055_data {
 	struct vector3_data grv;
 
 	struct calib_data calib;
+
+#if BNO055_USE_IRQ
+	const struct device *dev;
+	struct gpio_callback gpio_cb;
+	sensor_trigger_handler_t trigger_handler[BNO055_IRQ_SIZE];
+	const struct sensor_trigger *trigger[BNO055_IRQ_SIZE];
+	struct k_work cb_work;
+#endif
 };
 
 static int bno055_set_config(const struct device *dev, enum OperatingMode mode, bool fusion)
@@ -781,6 +794,93 @@ static int bno055_channel_get(const struct device *dev, enum sensor_channel chan
 	return -ENOTSUP;
 }
 
+#if BNO055_USE_IRQ
+static void bno055_gpio_callback_handler(const struct device *p_port, struct gpio_callback *cb, uint32_t pins)
+{
+	ARG_UNUSED(p_port);
+	ARG_UNUSED(pins);
+
+	struct bno055_data *data = CONTAINER_OF(cb, struct bno055_data, gpio_cb);
+
+	k_work_submit(&data->cb_work); // Using work queue to exit isr context
+}
+
+static void bno055_work_cb(struct k_work *p_work)
+{
+	struct bno055_data *data = CONTAINER_OF(p_work, struct bno055_data, cb_work);
+	const struct bno055_config *config = data->dev->config;
+	uint8_t reg;
+	int err;
+
+	LOG_DBG("Process Trigger worker from interrupt");
+
+	err = i2c_reg_read_byte_dt(&config->i2c_bus, BNO055_REGISTER_IRQ_STATUS, &reg);
+	if (err < 0) LOG_ERR("Trigger worker I2C read FLAGS error");
+
+	if (reg & BNO055_IRQ_MASK_ACC_BSX_DRDY) {
+		if (data->trigger_handler[BNO055_IRQ_ACC_BSX_DRDY]) {
+			LOG_DBG("Calling ACC_BSX_DRDY callback");
+			data->trigger_handler[BNO055_IRQ_ACC_BSX_DRDY](data->dev, data->trigger[BNO055_IRQ_ACC_BSX_DRDY]);
+		}
+	}
+
+	if (reg & BNO055_IRQ_MASK_MAG_DRDY) {
+		if (data->trigger_handler[BNO055_IRQ_MAG_DRDY]) {
+			LOG_DBG("Calling MAG_DRDY callback");
+			data->trigger_handler[BNO055_IRQ_MAG_DRDY](data->dev, data->trigger[BNO055_IRQ_MAG_DRDY]);
+		}
+	}
+
+	if (reg & BNO055_IRQ_MASK_GYR_AM) {
+		if (data->trigger_handler[BNO055_IRQ_GYR_AM]) {
+			LOG_DBG("Calling GYR_AM callback");
+			data->trigger_handler[BNO055_IRQ_GYR_AM](data->dev, data->trigger[BNO055_IRQ_GYR_AM]);
+		}
+	}
+
+	if (reg & BNO055_IRQ_MASK_GYR_HIGH_RATE) {
+		if (data->trigger_handler[BNO055_IRQ_GYR_HIGH_RATE]) {
+			LOG_DBG("Calling GYR_HIGH_RATE callback");
+			data->trigger_handler[BNO055_IRQ_GYR_HIGH_RATE](data->dev, data->trigger[BNO055_IRQ_GYR_HIGH_RATE]);
+		}
+	}
+
+	if (reg & BNO055_IRQ_MASK_GYR_DRDY) {
+		if (data->trigger_handler[BNO055_IRQ_GYR_DRDY]) {
+			LOG_DBG("Calling GYR_DRDY callback");
+			data->trigger_handler[BNO055_IRQ_GYR_DRDY](data->dev, data->trigger[BNO055_IRQ_GYR_DRDY]);
+		}
+	}
+
+	if (reg & BNO055_IRQ_MASK_ACC_HIGH_G) {
+		if (data->trigger_handler[BNO055_IRQ_ACC_HIGH_G]) {
+			LOG_DBG("Calling ACC_HIGH_G callback");
+			data->trigger_handler[BNO055_IRQ_ACC_HIGH_G](data->dev, data->trigger[BNO055_IRQ_ACC_HIGH_G]);
+		}
+	}
+
+	if (reg & BNO055_IRQ_MASK_ACC_AM) {
+		if (data->trigger_handler[BNO055_IRQ_ACC_AM]) {
+			LOG_DBG("Calling ACC_AM callback");
+			data->trigger_handler[BNO055_IRQ_ACC_AM](data->dev, data->trigger[BNO055_IRQ_ACC_AM]);
+		}
+	}
+
+	if (reg & BNO055_IRQ_MASK_ACC_NM) {
+		if (data->trigger_handler[BNO055_IRQ_ACC_NM]) {
+			LOG_DBG("Calling ACC_NM callback");
+			data->trigger_handler[BNO055_IRQ_ACC_NM](data->dev, data->trigger[BNO055_IRQ_ACC_NM]);
+		}
+	}
+}
+
+static int bno055_trigger_set(const struct device *dev, const struct sensor_trigger *trig, sensor_trigger_handler_t handler)
+{
+	return 0;
+}
+
+#endif
+
 static int bno055_init(const struct device *dev)
 {
 	const struct bno055_config *config = dev->config;
@@ -855,12 +955,17 @@ static const struct sensor_driver_api bno055_driver_api = {
 	.attr_set = bno055_attr_set,
 	.sample_fetch = bno055_sample_fetch,
 	.channel_get = bno055_channel_get,
+#if BNO055_USE_IRQ
+	.trigger_set = bno055_trigger_set,
+#endif
 };
 
-#define BNO055_INIT(n)                                                                             \
-	static struct bno055_config bno055_config_##n = {                                             \
+#define BNO055_INIT(n)                                                                         \
+	static struct bno055_config bno055_config_##n = {                                          \
 		.i2c_bus = I2C_DT_SPEC_INST_GET(n),                                                    \
-		.use_xtal = DT_INST_PROP(n, use_xtal),                                                    \
+		.use_xtal = DT_INST_PROP(n, use_xtal),                                                 \
+		IF_ENABLED(BNO055_USE_IRQ,                                                             \
+		(.irq_gpio = GPIO_DT_SPEC_INST_GET_OR(n, irq_gpios, {0}))),                            \
 	};                                                                                         \
 	static struct bno055_data bno055_data_##n;                                                 \
 	DEVICE_DT_INST_DEFINE(n, bno055_init, NULL, &bno055_data_##n, &bno055_config_##n,          \
