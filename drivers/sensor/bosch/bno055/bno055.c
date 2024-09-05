@@ -980,10 +980,157 @@ static void bno055_work_cb(struct k_work *p_work)
 	}
 }
 
+static int bno055_trigger_configuation(const struct device *dev, uint8_t mask, bool enable)
+{
+	const struct bno055_config *config = dev->config;
+	struct bno055_data *data = dev->data;
+	int err;
+
+	/* Switch to Page 1 */
+	if (data->current_page != BNO055_PAGE_ONE) {
+		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID,
+					    BNO055_PAGE_ONE);
+		if (err < 0) {
+			return err;
+		}
+		data->current_page = BNO055_PAGE_ONE;
+	}
+
+	if (enable) {
+		LOG_INF("TRIGGER %d Enable!!", mask);
+		err = i2c_reg_update_byte_dt(&config->i2c_bus, BNO055_REGISTER_INT_ENABLE, mask,
+					     BNO055_IRQ_ENABLE);
+		if (err < 0) {
+			return err;
+		}
+		err = i2c_reg_update_byte_dt(&config->i2c_bus, BNO055_REGISTER_INT_MASK, mask,
+					     BNO055_IRQ_ENABLE);
+		if (err < 0) {
+			return err;
+		}
+	} else {
+		LOG_INF("TRIGGER %d Disable!!", mask);
+		err = i2c_reg_update_byte_dt(&config->i2c_bus, BNO055_REGISTER_INT_MASK, mask,
+					     BNO055_IRQ_DISABLE);
+		if (err < 0) {
+			return err;
+		}
+		err = i2c_reg_update_byte_dt(&config->i2c_bus, BNO055_REGISTER_INT_ENABLE, mask,
+					     BNO055_IRQ_DISABLE);
+		if (err < 0) {
+			return err;
+		}
+	}
+
+	return 0;
+}
+
 static int bno055_trigger_set(const struct device *dev, const struct sensor_trigger *trig,
 			      sensor_trigger_handler_t handler)
 {
-	return 0;
+	struct bno055_data *data = dev->data;
+	int err;
+	LOG_INF("TRIGGER [%d] [%d]", trig->type, trig->chan);
+
+	if (trig->type == SENSOR_TRIG_DATA_READY) {
+		if (trig->chan == SENSOR_CHAN_ACCEL_XYZ) {
+			err = bno055_trigger_configuation(dev, BNO055_IRQ_MASK_ACC_BSX_DRDY,
+							  handler != NULL);
+			if (err < 0) {
+				return err;
+			}
+
+			data->trigger_handler[BNO055_IRQ_ACC_BSX_DRDY] = handler;
+			data->trigger[BNO055_IRQ_ACC_BSX_DRDY] = trig;
+		}
+
+		if (trig->chan == SENSOR_CHAN_MAGN_XYZ) {
+			err = bno055_trigger_configuation(dev, BNO055_IRQ_MASK_MAG_DRDY,
+							  handler != NULL);
+			if (err < 0) {
+				return err;
+			}
+
+			data->trigger_handler[BNO055_IRQ_MAG_DRDY] = handler;
+			data->trigger[BNO055_IRQ_MAG_DRDY] = trig;
+		}
+
+		if (trig->chan == SENSOR_CHAN_GYRO_XYZ) {
+			err = bno055_trigger_configuation(dev, BNO055_IRQ_MASK_GYR_DRDY,
+							  handler != NULL);
+			if (err < 0) {
+				return err;
+			}
+
+			data->trigger_handler[BNO055_IRQ_GYR_DRDY] = handler;
+			data->trigger[BNO055_IRQ_GYR_DRDY] = trig;
+		}
+	}
+
+	if (trig->type == SENSOR_TRIG_DELTA) {
+		if (trig->chan & SENSOR_CHAN_ACCEL_XYZ) {
+			err = bno055_trigger_configuation(dev, BNO055_IRQ_MASK_GYR_AM,
+							  handler != NULL);
+			if (err < 0) {
+				return err;
+			}
+
+			data->trigger_handler[BNO055_IRQ_GYR_AM] = handler;
+			data->trigger[BNO055_IRQ_GYR_AM] = trig;
+		}
+
+		if (trig->chan & SENSOR_CHAN_GYRO_XYZ) {
+			err = bno055_trigger_configuation(dev, BNO055_IRQ_MASK_ACC_AM,
+							  handler != NULL);
+			if (err < 0) {
+				return err;
+			}
+
+			data->trigger_handler[BNO055_IRQ_ACC_AM] = handler;
+			data->trigger[BNO055_IRQ_ACC_AM] = trig;
+		}
+	}
+
+	if (trig->type == SENSOR_TRIG_STATIONARY) {
+		if (trig->chan & SENSOR_CHAN_ACCEL_XYZ) {
+			err = bno055_trigger_configuation(dev, BNO055_IRQ_MASK_ACC_NM,
+							  handler != NULL);
+			if (err < 0) {
+				return err;
+			}
+
+			data->trigger_handler[BNO055_IRQ_ACC_NM] = handler;
+			data->trigger[BNO055_IRQ_ACC_NM] = trig;
+		}
+	}
+
+	if (trig->type == (enum sensor_trigger_type)BNO055_SENSOR_TRIG_HIGH_G) {
+		if (trig->chan & SENSOR_CHAN_ACCEL_XYZ) {
+			err = bno055_trigger_configuation(dev, BNO055_IRQ_MASK_ACC_HIGH_G,
+							  handler != NULL);
+			if (err < 0) {
+				return err;
+			}
+
+			data->trigger_handler[BNO055_IRQ_ACC_HIGH_G] = handler;
+			data->trigger[BNO055_IRQ_ACC_HIGH_G] = trig;
+		}
+	}
+
+	if (trig->type == (enum sensor_trigger_type)BNO055_SENSOR_TRIG_HIGH_RATE) {
+		if (trig->chan & SENSOR_CHAN_GYRO_XYZ) {
+			err = bno055_trigger_configuation(dev, BNO055_IRQ_MASK_GYR_HIGH_RATE,
+							  handler != NULL);
+			if (err < 0) {
+				return err;
+			}
+
+			data->trigger_handler[BNO055_IRQ_GYR_HIGH_RATE] = handler;
+			data->trigger[BNO055_IRQ_GYR_HIGH_RATE] = trig;
+		}
+	}
+
+	return -ENOTSUP;
 }
 
 #endif
