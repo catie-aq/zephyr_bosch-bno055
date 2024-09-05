@@ -1083,6 +1083,11 @@ static int bno055_init(const struct device *dev)
 		LOG_ERR("Failed to add GPIO callback!!");
 		return err;
 	}
+
+	data->dev = dev;
+	memset(&(data->trigger_handler[0]), 0, sizeof(data->trigger_handler));
+	memset(&(data->trigger[0]), 0, sizeof(data->trigger));
+	data->cb_work.handler = bno055_work_cb;
 #endif
 
 	return 0;
