@@ -1057,6 +1057,34 @@ static int bno055_init(const struct device *dev)
 		}
 	}
 
+	/* Configure GPIO interrupt */
+#if BNO055_USE_IRQ
+	if (!gpio_is_ready_dt(&config->irq_gpio)) {
+		LOG_ERR("GPIO not ready!!");
+		return -ENODEV;
+	}
+
+	err = gpio_pin_configure_dt(&config->irq_gpio, GPIO_INPUT);
+	if (err < 0) {
+		LOG_ERR("Failed to configure GPIO!!");
+		return err;
+	}
+
+	err = gpio_pin_interrupt_configure_dt(&config->irq_gpio, GPIO_INT_EDGE_RISING);
+	if (err < 0) {
+		LOG_ERR("Failed to configure interrupt!!");
+		return err;
+	}
+
+	gpio_init_callback(&data->gpio_cb, bno055_gpio_callback_handler, BIT(config->irq_gpio.pin));
+
+	err = gpio_add_callback_dt(&config->irq_gpio, &data->gpio_cb);
+	if (err < 0) {
+		LOG_ERR("Failed to add GPIO callback!!");
+		return err;
+	}
+#endif
+
 	return 0;
 }
 
