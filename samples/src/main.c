@@ -19,10 +19,10 @@ int main(void)
 {
 	struct sensor_value lia[3], grav[3], eul[3], quat[4], calib[4];
 
-	if (DEVICE_DT_DEFER(DT_NODELABEL(bno0550))) {
-		k_sleep(K_MSEC(BNO055_TIMING_STARTUP));
-		device_init(bno_dev);
-	}
+#if DEVICE_DT_DEFER(DT_NODELABEL(bno0550))
+	k_sleep(K_MSEC(BNO055_TIMING_STARTUP));
+	device_init(bno_dev);
+#endif
 
 	if (!device_is_ready(bno_dev)) {
 		printk("Device %s is not ready\n", bno_dev->name);
