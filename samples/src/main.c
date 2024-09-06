@@ -8,14 +8,24 @@
 #include <zephyr/drivers/sensor.h>
 #include <bno055.h> // Required for custom SENSOR_CHAN_*
 
-static const struct device *const dev = DEVICE_DT_GET(DT_NODELABEL(bno0550));
+static const struct device *const bno_dev = DEVICE_DT_GET(DT_NODELABEL(bno0550));
+
+void acc_data_ready(const struct device *dev, const struct sensor_trigger *trigger)
+{
+	printk("BSX data ready!!\n");
+}
 
 int main(void)
 {
 	struct sensor_value lia[3], grav[3], eul[3], quat[4], calib[4];
 
-	if (!device_is_ready(dev)) {
-		printk("Device %s is not ready\n", dev->name);
+	if (DEVICE_DT_DEFER(DT_NODELABEL(bno0550))) {
+		k_sleep(K_MSEC(BNO055_TIMING_STARTUP));
+		device_init(bno_dev);
+	}
+
+	if (!device_is_ready(bno_dev)) {
+		printk("Device %s is not ready\n", bno_dev->name);
 		return 1;
 	}
 
@@ -23,9 +33,15 @@ int main(void)
 		.val1 = BNO055_MODE_NDOF,
 		.val2 = 0,
 	};
-	sensor_attr_set(dev, SENSOR_CHAN_ALL, SENSOR_ATTR_CONFIGURATION, &config);
+	sensor_attr_set(bno_dev, SENSOR_CHAN_ALL, SENSOR_ATTR_CONFIGURATION, &config);
 	config.val1 = BNO055_POWER_NORMAL;
-	sensor_attr_set(dev, SENSOR_CHAN_ALL, BNO055_SENSOR_ATTR_POWER_MODE, &config);
+	sensor_attr_set(bno_dev, SENSOR_CHAN_ALL, BNO055_SENSOR_ATTR_POWER_MODE, &config);
+
+	struct sensor_trigger trig = {
+		.type = SENSOR_TRIG_DATA_READY,
+		.chan = SENSOR_CHAN_ACCEL_XYZ,
+	};
+	sensor_trigger_set(bno_dev, &trig, acc_data_ready);
 
 	while (1) {
 		sensor_sample_fetch(dev);
