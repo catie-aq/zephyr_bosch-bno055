@@ -15,5 +15,6 @@
 		reg = <0x28>;
 		irq-gpios = <&sixtron_connector WKUP (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
 		use_xtal;
+		zephyr,deferred-init;
 	};
 };

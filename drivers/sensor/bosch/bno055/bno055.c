@@ -17,6 +17,7 @@ LOG_MODULE_REGISTER(BNO055, CONFIG_SENSOR_LOG_LEVEL);
 struct bno055_config {
 	struct i2c_dt_spec i2c_bus;
 	bool use_xtal;
+	bool deferred;
 
 #if BNO055_USE_IRQ
 	const struct gpio_dt_spec irq_gpio;
@@ -1145,6 +1146,11 @@ static int bno055_init(const struct device *dev)
 		return -ENODEV;
 	}
 
+	LOG_INF("DEFERRED [%d]", config->deferred);
+	if (!config->deferred) {
+		k_sleep(K_MSEC(BNO055_TIMING_STARTUP));
+	}
+
 	LOG_INF("CONFIG");
 	LOG_INF("USE XTAL [%d]", config->use_xtal);
 	int err;
@@ -1152,6 +1158,7 @@ static int bno055_init(const struct device *dev)
 	/* Switch to Page 0 */
 	err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, BNO055_PAGE_ZERO);
 	if (err < 0) {
+		LOG_ERR("PAGE_ID write I2C Failed!!");
 		return err;
 	}
 	data->current_page = BNO055_PAGE_ZERO;
@@ -1160,6 +1167,7 @@ static int bno055_init(const struct device *dev)
 	err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_SYS_TRIGGER,
 				    BNO055_COMMAND_RESET);
 	if (err < 0) {
+		LOG_ERR("RESET write I2C Failed!!");
 		return err;
 	}
 	data->mode = BNO055_MODE_CONFIG;
@@ -1170,6 +1178,7 @@ static int bno055_init(const struct device *dev)
 	err = i2c_burst_read_dt(&config->i2c_bus, BNO055_REGISTER_CHIP_ID, chip_id,
 				sizeof(chip_id));
 	if (err < 0) {
+		LOG_ERR("CHIP_ID read I2C Failed!!");
 		return err;
 	}
 	LOG_INF("CHIP ID [%d]", chip_id[0]);
@@ -1180,9 +1189,11 @@ static int bno055_init(const struct device *dev)
 		err = i2c_burst_read_dt(&config->i2c_bus, BNO055_REGISTER_CHIP_ID, chip_id,
 					sizeof(chip_id));
 		if (err < 0) {
+			LOG_ERR("CHIP_ID read I2C Failed!!");
 			return err;
 		}
 		if (chip_id[0] != BNO055_CHIP_ID) {
+			LOG_ERR("CHIP_ID Failed!!");
 			return -ENODEV;
 		}
 	}
@@ -1255,6 +1266,8 @@ static const struct sensor_driver_api bno055_driver_api = {
 		.use_xtal = DT_INST_PROP(n, use_xtal),                                             \
 		IF_ENABLED(BNO055_USE_IRQ,                                                         \
 			   (.irq_gpio = GPIO_DT_SPEC_INST_GET_OR(n, irq_gpios, {0}))),             \
+		IF_ENABLED(DT_ANY_INST_HAS_PROP_STATUS_OKAY(zephyr_deferred_init),                 \
+			   (.deferred = DT_INST_PROP(n, zephyr_deferred_init))),                   \
 	};                                                                                         \
 	static struct bno055_data bno055_data_##n;                                                 \
 	DEVICE_DT_INST_DEFINE(n, bno055_init, NULL, &bno055_data_##n, &bno055_config_##n,          \
