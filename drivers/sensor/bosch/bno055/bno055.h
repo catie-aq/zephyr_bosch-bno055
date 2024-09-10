@@ -551,6 +551,7 @@ struct calib_data {
 #define BNO055_IRQ_ACC_HIGH_G    5
 #define BNO055_IRQ_ACC_AM        6
 #define BNO055_IRQ_ACC_NM        7
+#define BNO055_IRQ_ACC_AN_MOTION 6
 
 #define BNO055_IRQ_MASK_ACC_BSX_DRDY  (0x01 << BNO055_IRQ_ACC_BSX_DRDY)
 #define BNO055_IRQ_MASK_MAG_DRDY      (0x01 << BNO055_IRQ_MAG_DRDY)
@@ -561,7 +562,7 @@ struct calib_data {
 #define BNO055_IRQ_MASK_ACC_AM        (0x01 << BNO055_IRQ_ACC_AM)
 #define BNO055_IRQ_MASK_ACC_NM        (0x01 << BNO055_IRQ_ACC_NM)
 
-#define BNO055_IRQ_SIZE    8
+#define BNO055_IRQ_SIZE    7
 #define BNO055_IRQ_DISABLE 0x00
 #define BNO055_IRQ_ENABLE  0xFF
 
