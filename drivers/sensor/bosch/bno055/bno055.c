@@ -967,16 +967,16 @@ static void bno055_work_cb(struct k_work *p_work)
 	if (reg & BNO055_IRQ_MASK_ACC_AM) {
 		if (data->trigger_handler[BNO055_IRQ_ACC_AM]) {
 			LOG_DBG("Calling ACC_AM callback");
-			data->trigger_handler[BNO055_IRQ_ACC_AM](data->dev,
-								 data->trigger[BNO055_IRQ_ACC_AM]);
+			data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION](
+				data->dev, data->trigger[BNO055_IRQ_ACC_AN_MOTION]);
 		}
 	}
 
 	if (reg & BNO055_IRQ_MASK_ACC_NM) {
 		if (data->trigger_handler[BNO055_IRQ_ACC_NM]) {
 			LOG_DBG("Calling ACC_NM callback");
-			data->trigger_handler[BNO055_IRQ_ACC_NM](data->dev,
-								 data->trigger[BNO055_IRQ_ACC_NM]);
+			data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION](
+				data->dev, data->trigger[BNO055_IRQ_ACC_AN_MOTION]);
 		}
 	}
 }
@@ -1033,81 +1033,89 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 	int err;
 	LOG_INF("TRIGGER [%d] [%d]", trig->type, trig->chan);
 
-	if (trig->type == SENSOR_TRIG_DATA_READY) {
-		if (trig->chan == SENSOR_CHAN_ACCEL_XYZ) {
-			err = bno055_trigger_configuation(dev, BNO055_IRQ_MASK_ACC_BSX_DRDY,
-							  handler != NULL);
-			if (err < 0) {
-				return err;
-			}
-
-			data->trigger_handler[BNO055_IRQ_ACC_BSX_DRDY] = handler;
-			data->trigger[BNO055_IRQ_ACC_BSX_DRDY] = trig;
+	if ((trig->type == SENSOR_TRIG_DATA_READY) && (trig->chan == SENSOR_CHAN_ACCEL_XYZ)) {
+		err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_BSX_DRDY,
+						  handler != NULL);
+		if (err < 0) {
+			return err;
 		}
 
-		if (trig->chan == SENSOR_CHAN_MAGN_XYZ) {
-			err = bno055_trigger_configuation(dev, BNO055_IRQ_MASK_MAG_DRDY,
-							  handler != NULL);
-			if (err < 0) {
-				return err;
-			}
+		data->trigger_handler[BNO055_IRQ_ACC_BSX_DRDY] = handler;
+		data->trigger[BNO055_IRQ_ACC_BSX_DRDY] = trig;
+	}
 
-			data->trigger_handler[BNO055_IRQ_MAG_DRDY] = handler;
-			data->trigger[BNO055_IRQ_MAG_DRDY] = trig;
+	if ((trig->type == SENSOR_TRIG_DATA_READY) && (trig->chan == SENSOR_CHAN_MAGN_XYZ)) {
+		err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_MAG_DRDY,
+						  handler != NULL);
+		if (err < 0) {
+			return err;
 		}
 
-		if (trig->chan == SENSOR_CHAN_GYRO_XYZ) {
-			err = bno055_trigger_configuation(dev, BNO055_IRQ_MASK_GYR_DRDY,
+		data->trigger_handler[BNO055_IRQ_MAG_DRDY] = handler;
+		data->trigger[BNO055_IRQ_MAG_DRDY] = trig;
+	}
+
+	if ((trig->type == SENSOR_TRIG_DATA_READY) && (trig->chan == SENSOR_CHAN_GYRO_XYZ)) {
+		err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_DRDY,
+						  handler != NULL);
+		if (err < 0) {
+			return err;
+		}
+
+		data->trigger_handler[BNO055_IRQ_GYR_DRDY] = handler;
+		data->trigger[BNO055_IRQ_GYR_DRDY] = trig;
+	}
+
+	if ((trig->type == SENSOR_TRIG_DELTA) && (trig->chan & SENSOR_CHAN_GYRO_XYZ)) {
+		err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_AM,
+						  handler != NULL);
+		if (err < 0) {
+			return err;
+		}
+
+		data->trigger_handler[BNO055_IRQ_GYR_AM] = handler;
+		data->trigger[BNO055_IRQ_GYR_AM] = trig;
+	}
+
+	if ((trig->type == SENSOR_TRIG_DELTA) && (trig->chan & SENSOR_CHAN_ACCEL_XYZ)) {
+		if ((data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION] != NULL) &&
+		    (data->trigger[BNO055_IRQ_ACC_AN_MOTION] != NULL)) {
+			LOG_ERR("Any/No Motion trigger already affected!!");
+			return -EINVAL;
+		}
+		err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_AM,
+						  handler != NULL);
+		if (err < 0) {
+			return err;
+		}
+
+		data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION] = handler;
+		data->trigger[BNO055_IRQ_ACC_AN_MOTION] = trig;
+	}
+
+	if ((trig->type == SENSOR_TRIG_STATIONARY) && (trig->chan & SENSOR_CHAN_ACCEL_XYZ)) {
+		if (trig->chan & SENSOR_CHAN_ACCEL_XYZ) {
+			if ((data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION] != NULL) &&
+			    (data->trigger[BNO055_IRQ_ACC_AN_MOTION] != NULL)) {
+				LOG_ERR("Any/No Motion trigger already affected!!");
+				return -EINVAL;
+			}
+
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_NM,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
 			}
 
-			data->trigger_handler[BNO055_IRQ_GYR_DRDY] = handler;
-			data->trigger[BNO055_IRQ_GYR_DRDY] = trig;
+			data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION] = handler;
+			data->trigger[BNO055_IRQ_ACC_AN_MOTION] = trig;
 		}
 	}
 
-	if (trig->type == SENSOR_TRIG_DELTA) {
+	if ((trig->type == (enum sensor_trigger_type)BNO055_SENSOR_TRIG_HIGH_G) &&
+	    (trig->chan & SENSOR_CHAN_ACCEL_XYZ)) {
 		if (trig->chan & SENSOR_CHAN_ACCEL_XYZ) {
-			err = bno055_trigger_configuation(dev, BNO055_IRQ_MASK_GYR_AM,
-							  handler != NULL);
-			if (err < 0) {
-				return err;
-			}
-
-			data->trigger_handler[BNO055_IRQ_GYR_AM] = handler;
-			data->trigger[BNO055_IRQ_GYR_AM] = trig;
-		}
-
-		if (trig->chan & SENSOR_CHAN_GYRO_XYZ) {
-			err = bno055_trigger_configuation(dev, BNO055_IRQ_MASK_ACC_AM,
-							  handler != NULL);
-			if (err < 0) {
-				return err;
-			}
-
-			data->trigger_handler[BNO055_IRQ_ACC_AM] = handler;
-			data->trigger[BNO055_IRQ_ACC_AM] = trig;
-		}
-	}
-
-	if (trig->type == SENSOR_TRIG_STATIONARY) {
-		if (trig->chan & SENSOR_CHAN_ACCEL_XYZ) {
-			err = bno055_trigger_configuation(dev, BNO055_IRQ_MASK_ACC_NM,
-							  handler != NULL);
-			if (err < 0) {
-				return err;
-			}
-
-			data->trigger_handler[BNO055_IRQ_ACC_NM] = handler;
-			data->trigger[BNO055_IRQ_ACC_NM] = trig;
-		}
-	}
-
-	if (trig->type == (enum sensor_trigger_type)BNO055_SENSOR_TRIG_HIGH_G) {
-		if (trig->chan & SENSOR_CHAN_ACCEL_XYZ) {
-			err = bno055_trigger_configuation(dev, BNO055_IRQ_MASK_ACC_HIGH_G,
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_HIGH_G,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
@@ -1118,9 +1126,10 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 		}
 	}
 
-	if (trig->type == (enum sensor_trigger_type)BNO055_SENSOR_TRIG_HIGH_RATE) {
+	if ((trig->type == (enum sensor_trigger_type)BNO055_SENSOR_TRIG_HIGH_RATE) &&
+	    (trig->chan & SENSOR_CHAN_GYRO_XYZ)) {
 		if (trig->chan & SENSOR_CHAN_GYRO_XYZ) {
-			err = bno055_trigger_configuation(dev, BNO055_IRQ_MASK_GYR_HIGH_RATE,
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_HIGH_RATE,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
