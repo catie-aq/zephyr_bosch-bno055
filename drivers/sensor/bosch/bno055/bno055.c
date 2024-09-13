@@ -46,40 +46,108 @@ struct bno055_data {
 	sensor_trigger_handler_t trigger_handler[BNO055_IRQ_SIZE];
 	const struct sensor_trigger *trigger[BNO055_IRQ_SIZE];
 	struct k_work cb_work;
+
+	struct sensor_value acc_am;
 #endif
 };
 
-static int bno055_set_config(const struct device *dev, enum OperatingMode mode, bool fusion)
+static int bno055_set_page(const struct device *dev, enum PageId page)
 {
+	const struct bno055_config *config = dev->config;
 	struct bno055_data *data = dev->data;
-	if (data->mode == mode) {
+	uint8_t reg;
+	int err;
+
+	LOG_INF("FUNC PAGE[%d]", page);
+	err = i2c_reg_read_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, &reg);
+	if (err < 0) {
+		return err;
+	}
+
+	if (data->current_page != (reg & BNO055_PAGE_ID_MASK)) {
+		LOG_WRN("[W] I2C page register issue [%d]|[%d]!!", data->current_page,
+			reg & BNO055_PAGE_ID_MASK);
+		data->current_page = reg & BNO055_PAGE_ID_MASK;
+	}
+
+	if ((reg & BNO055_PAGE_ID_MASK) == page) {
+		LOG_INF("I2C page register already good!!");
 		return 0;
 	}
 
-	const struct bno055_config *config = dev->config;
-	int err;
-
-	/* Switch to Page 0 */
-	if (data->current_page != BNO055_PAGE_ZERO) {
-		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID,
-					    BNO055_PAGE_ZERO);
-		if (err < 0) {
-			return err;
-		}
-		data->current_page = BNO055_PAGE_ZERO;
+	// Write PAGE
+	err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, page);
+	if (err < 0) {
+		return err;
 	}
 
-	if (data->mode != BNO055_MODE_CONFIG) {
+	// Read PAGE
+	err = i2c_reg_read_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, &reg);
+	if (err < 0) {
+		return err;
+	}
+
+	if ((reg & BNO055_PAGE_ID_MASK) != page) {
+		LOG_ERR("[E] I2C communication compromised [%d]|[%d]!!", reg & BNO055_PAGE_ID_MASK,
+			page);
+		return -1;
+	}
+
+	data->current_page = reg & BNO055_PAGE_ID_MASK;
+	LOG_INF("FUNC PAGE[%d]", page);
+	return 0;
+}
+
+static int bno055_set_config(const struct device *dev, enum OperatingMode mode, bool fusion)
+{
+	const struct bno055_config *config = dev->config;
+	struct bno055_data *data = dev->data;
+	uint8_t reg;
+	int err;
+
+	LOG_INF("FUNC MODE[%d]", mode);
+
+	/* Switch to Page 0 */
+	err = bno055_set_page(dev, BNO055_PAGE_ZERO);
+	if (err < 0) {
+		return err;
+	}
+
+	err = i2c_reg_read_byte_dt(&config->i2c_bus, BNO055_REGISTER_OPERATION_MODE, &reg);
+	if (err < 0) {
+		return err;
+	}
+
+	if (data->mode != (reg & BNO055_OPERATION_MODE_MASK)) {
+		LOG_WRN("[WC_1] I2C mode register issue [%d]|[%d]!!", data->mode,
+			reg & BNO055_OPERATION_MODE_MASK);
+		data->mode = reg & BNO055_OPERATION_MODE_MASK;
+	}
+
+	if ((reg & BNO055_OPERATION_MODE_MASK) != BNO055_MODE_CONFIG) {
 		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_OPERATION_MODE,
 					    BNO055_MODE_CONFIG);
 		if (err < 0) {
 			return err;
 		}
+		LOG_INF("MODE[%d]", BNO055_MODE_CONFIG);
 		k_sleep(K_MSEC(BNO055_TIMING_SWITCH_FROM_ANY));
 	}
 
+	err = i2c_reg_read_byte_dt(&config->i2c_bus, BNO055_REGISTER_OPERATION_MODE, &reg);
+	if (err < 0) {
+		return err;
+	}
+
+	if ((reg & BNO055_OPERATION_MODE_MASK) != BNO055_MODE_CONFIG) {
+		LOG_ERR("[EC_1] I2C communication compromised [%d]|[%d]!!",
+			reg & BNO055_OPERATION_MODE_MASK, BNO055_MODE_CONFIG);
+		return -1;
+	}
+	data->mode = reg & BNO055_OPERATION_MODE_MASK;
+
 	if (mode == BNO055_MODE_CONFIG) {
-		data->mode = mode;
+		LOG_INF("I2C mode register already good!!");
 		return 0;
 	}
 
@@ -87,12 +155,7 @@ static int bno055_set_config(const struct device *dev, enum OperatingMode mode, 
 	defined(CONFIG_BNO055_GYR_CUSTOM_CONFIG)
 	if (!fusion) {
 		/* Switch to Page 1 */
-		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID,
-					    BNO055_PAGE_ONE);
-		if (err < 0) {
-			return err;
-		}
-		data->current_page = BNO055_PAGE_ONE;
+		bno055_set_page(dev, BNO055_PAGE_ONE);
 
 		uint8_t reg = 0x00;
 		reg = reg | BNO055_ACC_RANGE | BNO055_ACC_BANDWIDTH | BNO055_ACC_POWER;
@@ -119,12 +182,10 @@ static int bno055_set_config(const struct device *dev, enum OperatingMode mode, 
 		}
 
 		/* Switch back to Page 0 */
-		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID,
-					    BNO055_PAGE_ZERO);
+		err = bno055_set_page(dev, BNO055_PAGE_ZERO);
 		if (err < 0) {
 			return err;
 		}
-		data->current_page = BNO055_PAGE_ZERO;
 	}
 #endif
 
@@ -132,21 +193,34 @@ static int bno055_set_config(const struct device *dev, enum OperatingMode mode, 
 	if (err < 0) {
 		return err;
 	}
-	k_sleep(K_MSEC(BNO055_TIMING_SWITCH_FROM_CONFIG));
+	k_sleep(K_MSEC(
+		33 *
+		BNO055_TIMING_SWITCH_FROM_CONFIG)); // /!\ not datasheet confrom WRONG DATASHEET
 
-	data->mode = mode;
+	err = i2c_reg_read_byte_dt(&config->i2c_bus, BNO055_REGISTER_OPERATION_MODE, &reg);
+	if (err < 0) {
+		return err;
+	}
+
+	if ((reg & BNO055_PAGE_ID_MASK) != mode) {
+		LOG_ERR("[EC_2] I2C communication compromised [%d]|[%d]!!",
+			reg & BNO055_OPERATION_MODE_MASK, mode);
+		return -1;
+	}
+
+	data->mode = reg & BNO055_OPERATION_MODE_MASK;
+	LOG_INF("FUNC MODE[%d]", mode);
 	return 0;
 }
 
 static int bno055_set_power(const struct device *dev, enum PowerMode power)
 {
-	struct bno055_data *data = dev->data;
-	if (data->power == power) {
-		return 0;
-	}
-
 	const struct bno055_config *config = dev->config;
+	struct bno055_data *data = dev->data;
+	uint8_t reg;
 	int err;
+
+	LOG_INF("FUNC POWER[%d]", power);
 
 	enum OperatingMode mode = data->mode;
 	err = bno055_set_config(dev, BNO055_MODE_CONFIG, false);
@@ -154,17 +228,44 @@ static int bno055_set_power(const struct device *dev, enum PowerMode power)
 		return err;
 	}
 
-	err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_POWER_MODE, power);
+	err = i2c_reg_read_byte_dt(&config->i2c_bus, BNO055_REGISTER_POWER_MODE, &reg);
 	if (err < 0) {
 		return err;
 	}
-	data->power = power;
+
+	if (data->power != (reg & BNO055_POWER_MODE_MASK)) {
+		LOG_WRN("[WP_1] I2C mode register issue [%d]|[%d]!!", data->power,
+			reg & BNO055_POWER_MODE_MASK);
+		data->power = reg & BNO055_POWER_MODE_MASK;
+	}
+
+	if ((reg & BNO055_POWER_MODE_MASK) == power) {
+		LOG_INF("I2C power register already good!!");
+	} else {
+		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_POWER_MODE, power);
+		if (err < 0) {
+			return err;
+		}
+
+		err = i2c_reg_read_byte_dt(&config->i2c_bus, BNO055_REGISTER_POWER_MODE, &power);
+		if (err < 0) {
+			return err;
+		}
+
+		if ((reg & BNO055_POWER_MODE_MASK) != mode) {
+			LOG_ERR("[EP_1] I2C communication compromised [%d]|[%d]!!",
+				reg & BNO055_POWER_MODE_MASK, mode);
+			return -1;
+		}
+		data->power = reg & BNO055_POWER_MODE_MASK;
+	}
 
 	err = bno055_set_config(dev, mode, mode < BNO055_MODE_IMU ? false : true);
 	if (err < 0) {
 		return err;
 	}
 
+	LOG_INF("FUNC POWER[%d]", power);
 	return 0;
 }
 
@@ -229,8 +330,10 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 	switch (chan) {
 	case SENSOR_CHAN_ALL:
 		if (attr == SENSOR_ATTR_CONFIGURATION) {
+			LOG_INF("SET MODE[%d]", val->val1);
 			switch (val->val1) {
 			case BNO055_MODE_CONFIG:
+				LOG_INF("MODE BNO055_MODE_CONFIG");
 				err = bno055_set_config(dev, BNO055_MODE_CONFIG, false);
 				if (err < 0) {
 					return err;
@@ -238,6 +341,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_ACC_ONLY:
+				LOG_INF("MODE BNO055_MODE_ACC_ONLY");
 				err = bno055_set_config(dev, BNO055_MODE_ACC_ONLY, false);
 				if (err < 0) {
 					return err;
@@ -245,6 +349,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_MAG_ONLY:
+				LOG_INF("MODE BNO055_MODE_MAG_ONLY");
 				err = bno055_set_config(dev, BNO055_MODE_MAG_ONLY, false);
 				if (err < 0) {
 					return err;
@@ -252,6 +357,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_GYRO_ONLY:
+				LOG_INF("MODE BNO055_MODE_GYRO_ONLY");
 				err = bno055_set_config(dev, BNO055_MODE_GYRO_ONLY, false);
 				if (err < 0) {
 					return err;
@@ -259,6 +365,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_ACC_MAG:
+				LOG_INF("MODE BNO055_MODE_ACC_MAG");
 				err = bno055_set_config(dev, BNO055_MODE_ACC_MAG, false);
 				if (err < 0) {
 					return err;
@@ -266,6 +373,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_ACC_GYRO:
+				LOG_INF("MODE BNO055_MODE_ACC_GYRO");
 				err = bno055_set_config(dev, BNO055_MODE_ACC_GYRO, false);
 				if (err < 0) {
 					return err;
@@ -273,6 +381,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_MAG_GYRO:
+				LOG_INF("MODE BNO055_MODE_MAG_GYRO");
 				err = bno055_set_config(dev, BNO055_MODE_MAG_GYRO, false);
 				if (err < 0) {
 					return err;
@@ -280,6 +389,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_ACC_MAG_GYRO:
+				LOG_INF("MODE BNO055_MODE_ACC_MAG_GYRO");
 				err = bno055_set_config(dev, BNO055_MODE_ACC_MAG_GYRO, false);
 				if (err < 0) {
 					return err;
@@ -287,6 +397,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_IMU:
+				LOG_INF("MODE BNO055_MODE_IMU");
 				err = bno055_set_config(dev, BNO055_MODE_IMU, true);
 				if (err < 0) {
 					return err;
@@ -294,6 +405,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_COMPASS:
+				LOG_INF("MODE BNO055_MODE_COMPASS");
 				err = bno055_set_config(dev, BNO055_MODE_COMPASS, true);
 				if (err < 0) {
 					return err;
@@ -301,6 +413,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_M4G:
+				LOG_INF("MODE BNO055_MODE_M4G");
 				err = bno055_set_config(dev, BNO055_MODE_M4G, true);
 				if (err < 0) {
 					return err;
@@ -308,6 +421,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_NDOF_FMC_OFF:
+				LOG_INF("MODE BNO055_MODE_NDOF_FMC_OFF");
 				err = bno055_set_config(dev, BNO055_MODE_NDOF_FMC_OFF, true);
 				if (err < 0) {
 					return err;
@@ -315,6 +429,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_NDOF:
+				LOG_INF("MODE BNO055_MODE_NDOF");
 				err = bno055_set_config(dev, BNO055_MODE_NDOF, true);
 				if (err < 0) {
 					return err;
@@ -325,8 +440,10 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				return -EINVAL;
 			}
 		} else if (attr == (enum sensor_attribute)BNO055_SENSOR_ATTR_POWER_MODE) {
+			LOG_INF("SET POWER[%d]", val->val1);
 			switch (val->val1) {
 			case BNO055_POWER_NORMAL:
+				LOG_INF("POWER BNO055_POWER_NORMAL");
 				err = bno055_set_power(dev, BNO055_POWER_NORMAL);
 				if (err < 0) {
 					return err;
@@ -334,6 +451,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_POWER_LOW_POWER:
+				LOG_INF("POWER BNO055_POWER_LOW_POWER");
 				err = bno055_set_power(dev, BNO055_POWER_LOW_POWER);
 				if (err < 0) {
 					return err;
@@ -341,6 +459,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_POWER_SUSPEND:
+				LOG_INF("POWER BNO055_POWER_SUSPEND");
 				err = bno055_set_power(dev, BNO055_POWER_SUSPEND);
 				if (err < 0) {
 					return err;
@@ -348,6 +467,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_POWER_INVALID:
+				LOG_INF("POWER BNO055_POWER_INVALID");
 				err = bno055_set_power(dev, BNO055_POWER_INVALID);
 				if (err < 0) {
 					return err;
@@ -370,18 +490,10 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 static int bno055_sample_fetch(const struct device *dev, enum sensor_channel chan)
 {
 	struct bno055_data *data = dev->data;
-	const struct bno055_config *config = dev->config;
 	int err;
 
 	/* Switch to Page 0 */
-	if (data->current_page != BNO055_PAGE_ZERO) {
-		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID,
-					    BNO055_PAGE_ZERO);
-		if (err < 0) {
-			return err;
-		}
-		data->current_page = BNO055_PAGE_ZERO;
-	}
+	bno055_set_page(dev, BNO055_PAGE_ZERO);
 
 	switch (data->mode) {
 	case BNO055_MODE_CONFIG:
@@ -891,13 +1003,14 @@ static int bno055_channel_get(const struct device *dev, enum sensor_channel chan
 }
 
 #if BNO055_USE_IRQ
-static void bno055_gpio_callback_handler(const struct device *p_port, struct gpio_callback *cb,
+static void bno055_gpio_callback_handler(const struct device *p_port, struct gpio_callback *p_cb,
 					 uint32_t pins)
 {
 	ARG_UNUSED(p_port);
 	ARG_UNUSED(pins);
+	LOG_INF("Process GPIO callback!!");
 
-	struct bno055_data *data = CONTAINER_OF(cb, struct bno055_data, gpio_cb);
+	struct bno055_data *data = CONTAINER_OF(p_cb, struct bno055_data, gpio_cb);
 
 	k_work_submit(&data->cb_work); // Using work queue to exit isr context
 }
@@ -965,7 +1078,7 @@ static void bno055_work_cb(struct k_work *p_work)
 	}
 
 	if (reg & BNO055_IRQ_MASK_ACC_AM) {
-		if (data->trigger_handler[BNO055_IRQ_ACC_AM]) {
+		if (data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION]) {
 			LOG_DBG("Calling ACC_AM callback");
 			data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION](
 				data->dev, data->trigger[BNO055_IRQ_ACC_AN_MOTION]);
@@ -973,56 +1086,104 @@ static void bno055_work_cb(struct k_work *p_work)
 	}
 
 	if (reg & BNO055_IRQ_MASK_ACC_NM) {
-		if (data->trigger_handler[BNO055_IRQ_ACC_NM]) {
+		if (data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION]) {
 			LOG_DBG("Calling ACC_NM callback");
 			data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION](
 				data->dev, data->trigger[BNO055_IRQ_ACC_AN_MOTION]);
 		}
 	}
+
+	err = i2c_reg_read_byte_dt(&config->i2c_bus, BNO055_REGISTER_SYS_TRIGGER, &reg);
+	if (err < 0) {
+		LOG_ERR("Trigger worker I2C read SYS_TRIG error");
+	}
+
+	reg |= BNO055_RESET_INT;
+	err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_SYS_TRIGGER, reg);
+	if (err < 0) {
+		LOG_ERR("Trigger worker I2C write SYS_TRIG error");
+	}
 }
 
-static int bno055_trigger_configuation(const struct device *dev, uint8_t mask, bool enable)
+static int bno055_trigger_configuation(const struct device *dev, const struct sensor_trigger *trig,
+				       uint8_t mask, bool enable)
 {
 	const struct bno055_config *config = dev->config;
 	struct bno055_data *data = dev->data;
 	int err;
 
-	/* Switch to Page 1 */
-	if (data->current_page != BNO055_PAGE_ONE) {
-		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID,
-					    BNO055_PAGE_ONE);
-		if (err < 0) {
-			return err;
-		}
-		data->current_page = BNO055_PAGE_ONE;
+	LOG_DBG("FUNC TRIGGER[%d][%d]", mask, enable);
+	enum OperatingMode mode = data->mode;
+	err = bno055_set_config(dev, BNO055_MODE_CONFIG, false);
+	if (err < 0) {
+		return err;
 	}
 
-	if (enable) {
-		LOG_INF("TRIGGER %d Enable!!", mask);
-		err = i2c_reg_update_byte_dt(&config->i2c_bus, BNO055_REGISTER_INT_ENABLE, mask,
-					     BNO055_IRQ_ENABLE);
+	/* Switch to Page 1 */
+	bno055_set_page(dev, BNO055_PAGE_ONE);
+
+	uint8_t reg[2];
+	if ((trig->type == SENSOR_TRIG_DELTA) && (trig->chan == SENSOR_CHAN_ACCEL_XYZ)) {
+		err = i2c_reg_read_byte_dt(&config->i2c_bus, BNO055_REGISTER_ACC_INT_SETTINGS,
+					   &reg[0]);
 		if (err < 0) {
 			return err;
 		}
-		err = i2c_reg_update_byte_dt(&config->i2c_bus, BNO055_REGISTER_INT_MASK, mask,
-					     BNO055_IRQ_ENABLE);
+
+		reg[0] &= ~BNO055_IRQ_ACC_MASK_AN_MOTION_AXIS;
+		reg[0] |= BNO055_IRQ_ACC_MASK_AN_MOTION_AXIS;
+
+		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_ACC_INT_SETTINGS,
+					    reg[0]);
+		if (err < 0) {
+			return err;
+		}
+	}
+
+	err = i2c_burst_read_dt(&config->i2c_bus, BNO055_REGISTER_INT_MASK, reg, sizeof(reg));
+	if (err < 0) {
+		return err;
+	}
+	LOG_DBG("MASK[%d] | ENABLE[%d]", reg[0], reg[1]);
+
+	if (enable) {
+		LOG_DBG("TRIGGER %d Enable!!", mask);
+		reg[0] |= mask;
+		if (mask & BNO055_IRQ_MASK_ACC_AM) {
+			reg[1] &= ~BNO055_IRQ_MASK_ACC_NM;
+		} else if (mask & BNO055_IRQ_MASK_ACC_NM) {
+			reg[1] &= ~BNO055_IRQ_MASK_ACC_AM;
+		}
+		reg[1] |= mask;
+		LOG_DBG("TARGET[%d][%d]", reg[0], reg[1]);
+		err = i2c_burst_write_dt(&config->i2c_bus, BNO055_REGISTER_INT_MASK, reg,
+					 sizeof(reg));
 		if (err < 0) {
 			return err;
 		}
 	} else {
-		LOG_INF("TRIGGER %d Disable!!", mask);
-		err = i2c_reg_update_byte_dt(&config->i2c_bus, BNO055_REGISTER_INT_MASK, mask,
-					     BNO055_IRQ_DISABLE);
-		if (err < 0) {
-			return err;
-		}
-		err = i2c_reg_update_byte_dt(&config->i2c_bus, BNO055_REGISTER_INT_ENABLE, mask,
-					     BNO055_IRQ_DISABLE);
+		LOG_DBG("TRIGGER %d Disable!!", mask);
+		reg[0] &= ~mask;
+		reg[1] &= ~mask;
+		err = i2c_burst_write_dt(&config->i2c_bus, BNO055_REGISTER_INT_MASK, reg,
+					 sizeof(reg));
 		if (err < 0) {
 			return err;
 		}
 	}
 
+	err = i2c_burst_read_dt(&config->i2c_bus, BNO055_REGISTER_INT_MASK, reg, sizeof(reg));
+	if (err < 0) {
+		return err;
+	}
+	LOG_DBG("MASK[%d] | ENABLE[%d]", reg[0], reg[1]);
+
+	err = bno055_set_config(dev, mode, mode < BNO055_MODE_IMU ? false : true);
+	if (err < 0) {
+		return err;
+	}
+
+	LOG_DBG("FUNC TRIGGER[%d][%d]", reg[0], reg[1]);
 	return 0;
 }
 
@@ -1031,7 +1192,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 {
 	struct bno055_data *data = dev->data;
 	int err;
-	LOG_INF("TRIGGER [%d] [%d]", trig->type, trig->chan);
+	LOG_INF("TRIGGER [%d][%d]", trig->type, trig->chan);
 
 	if ((trig->type == SENSOR_TRIG_DATA_READY) && (trig->chan == SENSOR_CHAN_ACCEL_XYZ)) {
 		err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_BSX_DRDY,
@@ -1042,6 +1203,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 
 		data->trigger_handler[BNO055_IRQ_ACC_BSX_DRDY] = handler;
 		data->trigger[BNO055_IRQ_ACC_BSX_DRDY] = trig;
+		return 0;
 	}
 
 	if ((trig->type == SENSOR_TRIG_DATA_READY) && (trig->chan == SENSOR_CHAN_MAGN_XYZ)) {
@@ -1053,6 +1215,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 
 		data->trigger_handler[BNO055_IRQ_MAG_DRDY] = handler;
 		data->trigger[BNO055_IRQ_MAG_DRDY] = trig;
+		return 0;
 	}
 
 	if ((trig->type == SENSOR_TRIG_DATA_READY) && (trig->chan == SENSOR_CHAN_GYRO_XYZ)) {
@@ -1064,9 +1227,10 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 
 		data->trigger_handler[BNO055_IRQ_GYR_DRDY] = handler;
 		data->trigger[BNO055_IRQ_GYR_DRDY] = trig;
+		return 0;
 	}
 
-	if ((trig->type == SENSOR_TRIG_DELTA) && (trig->chan & SENSOR_CHAN_GYRO_XYZ)) {
+	if ((trig->type == SENSOR_TRIG_DELTA) && (trig->chan == SENSOR_CHAN_GYRO_XYZ)) {
 		err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_AM,
 						  handler != NULL);
 		if (err < 0) {
@@ -1075,9 +1239,10 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 
 		data->trigger_handler[BNO055_IRQ_GYR_AM] = handler;
 		data->trigger[BNO055_IRQ_GYR_AM] = trig;
+		return 0;
 	}
 
-	if ((trig->type == SENSOR_TRIG_DELTA) && (trig->chan & SENSOR_CHAN_ACCEL_XYZ)) {
+	if ((trig->type == SENSOR_TRIG_DELTA) && (trig->chan == SENSOR_CHAN_ACCEL_XYZ)) {
 		if ((data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION] != NULL) &&
 		    (data->trigger[BNO055_IRQ_ACC_AN_MOTION] != NULL)) {
 			LOG_ERR("Any/No Motion trigger already affected!!");
@@ -1091,58 +1256,55 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 
 		data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION] = handler;
 		data->trigger[BNO055_IRQ_ACC_AN_MOTION] = trig;
+		return 0;
 	}
 
-	if ((trig->type == SENSOR_TRIG_STATIONARY) && (trig->chan & SENSOR_CHAN_ACCEL_XYZ)) {
-		if (trig->chan & SENSOR_CHAN_ACCEL_XYZ) {
-			if ((data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION] != NULL) &&
-			    (data->trigger[BNO055_IRQ_ACC_AN_MOTION] != NULL)) {
-				LOG_ERR("Any/No Motion trigger already affected!!");
-				return -EINVAL;
-			}
-
-			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_NM,
-							  handler != NULL);
-			if (err < 0) {
-				return err;
-			}
-
-			data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION] = handler;
-			data->trigger[BNO055_IRQ_ACC_AN_MOTION] = trig;
+	if ((trig->type == SENSOR_TRIG_STATIONARY) && (trig->chan == SENSOR_CHAN_ACCEL_XYZ)) {
+		if ((data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION] != NULL) &&
+		    (data->trigger[BNO055_IRQ_ACC_AN_MOTION] != NULL)) {
+			LOG_ERR("Any/No Motion trigger already affected!!");
+			return -EINVAL;
 		}
+		err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_NM,
+						  handler != NULL);
+		if (err < 0) {
+			return err;
+		}
+
+		data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION] = handler;
+		data->trigger[BNO055_IRQ_ACC_AN_MOTION] = trig;
+		return 0;
 	}
 
 	if ((trig->type == (enum sensor_trigger_type)BNO055_SENSOR_TRIG_HIGH_G) &&
-	    (trig->chan & SENSOR_CHAN_ACCEL_XYZ)) {
-		if (trig->chan & SENSOR_CHAN_ACCEL_XYZ) {
-			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_HIGH_G,
-							  handler != NULL);
-			if (err < 0) {
-				return err;
-			}
-
-			data->trigger_handler[BNO055_IRQ_ACC_HIGH_G] = handler;
-			data->trigger[BNO055_IRQ_ACC_HIGH_G] = trig;
+	    (trig->chan == SENSOR_CHAN_ACCEL_XYZ)) {
+		err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_HIGH_G,
+						  handler != NULL);
+		if (err < 0) {
+			return err;
 		}
+
+		data->trigger_handler[BNO055_IRQ_ACC_HIGH_G] = handler;
+		data->trigger[BNO055_IRQ_ACC_HIGH_G] = trig;
+		return 0;
 	}
 
 	if ((trig->type == (enum sensor_trigger_type)BNO055_SENSOR_TRIG_HIGH_RATE) &&
-	    (trig->chan & SENSOR_CHAN_GYRO_XYZ)) {
-		if (trig->chan & SENSOR_CHAN_GYRO_XYZ) {
-			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_HIGH_RATE,
-							  handler != NULL);
-			if (err < 0) {
-				return err;
-			}
-
-			data->trigger_handler[BNO055_IRQ_GYR_HIGH_RATE] = handler;
-			data->trigger[BNO055_IRQ_GYR_HIGH_RATE] = trig;
+	    (trig->chan == SENSOR_CHAN_GYRO_XYZ)) {
+		err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_HIGH_RATE,
+						  handler != NULL);
+		if (err < 0) {
+			return err;
 		}
+
+		data->trigger_handler[BNO055_IRQ_GYR_HIGH_RATE] = handler;
+		data->trigger[BNO055_IRQ_GYR_HIGH_RATE] = trig;
+		return 0;
 	}
 
+	LOG_INF("TRIGGER [%d] [%d]", trig->type, trig->chan);
 	return -ENOTSUP;
 }
-
 #endif
 
 static int bno055_init(const struct device *dev)
@@ -1165,12 +1327,7 @@ static int bno055_init(const struct device *dev)
 	int err;
 
 	/* Switch to Page 0 */
-	err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, BNO055_PAGE_ZERO);
-	if (err < 0) {
-		LOG_ERR("PAGE_ID write I2C Failed!!");
-		return err;
-	}
-	data->current_page = BNO055_PAGE_ZERO;
+	bno055_set_page(dev, BNO055_PAGE_ZERO);
 
 	/* Send Reset Command */
 	err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_SYS_TRIGGER,
@@ -1183,29 +1340,32 @@ static int bno055_init(const struct device *dev)
 	k_sleep(K_MSEC(BNO055_TIMING_RESET_CONFIG));
 
 	/* Check for chip id to validate the power on of the sensor */
-	uint8_t chip_id[1];
-	err = i2c_burst_read_dt(&config->i2c_bus, BNO055_REGISTER_CHIP_ID, chip_id,
-				sizeof(chip_id));
+	uint8_t reg;
+	err = i2c_reg_read_byte_dt(&config->i2c_bus, BNO055_REGISTER_CHIP_ID, &reg);
 	if (err < 0) {
 		LOG_ERR("CHIP_ID read I2C Failed!!");
 		return err;
 	}
-	LOG_INF("CHIP ID [%d]", chip_id[0]);
+	LOG_INF("CHIP ID [%d]", reg);
 
-	if (chip_id[0] != BNO055_CHIP_ID) {
+	if (reg != BNO055_CHIP_ID) {
 		LOG_WRN("BNO055 Not Ready yet!!");
 		k_sleep(K_MSEC(BNO055_TIMING_RESET_CONFIG));
-		err = i2c_burst_read_dt(&config->i2c_bus, BNO055_REGISTER_CHIP_ID, chip_id,
-					sizeof(chip_id));
+
+		err = i2c_reg_read_byte_dt(&config->i2c_bus, BNO055_REGISTER_CHIP_ID, &reg);
 		if (err < 0) {
 			LOG_ERR("CHIP_ID read I2C Failed!!");
 			return err;
 		}
-		if (chip_id[0] != BNO055_CHIP_ID) {
+		if (reg != BNO055_CHIP_ID) {
 			LOG_ERR("CHIP_ID Failed!!");
 			return -ENODEV;
 		}
 	}
+
+	uint8_t soft[2];
+	err = i2c_burst_read_dt(&config->i2c_bus, BNO055_REGISTER_SOFTWARE_REV, soft, sizeof(soft));
+	LOG_INF("SOFTWARE REV [%d][%d]", soft[1], soft[0]);
 
 	/* Configure Unit according to Zephyr */
 	uint8_t selection = (BNO055_ORIENTATION_WINDOWS << 7) | (BNO055_TEMP_UNIT_CELSIUS << 4) |
@@ -1223,6 +1383,9 @@ static int bno055_init(const struct device *dev)
 			return err;
 		}
 	}
+
+	err = i2c_reg_read_byte_dt(&config->i2c_bus, BNO055_REGISTER_SYS_TRIGGER, &reg);
+	LOG_INF("SYS TRIGGER [%d]", reg);
 
 	/* Configure GPIO interrupt */
 #if BNO055_USE_IRQ
@@ -1250,6 +1413,7 @@ static int bno055_init(const struct device *dev)
 		LOG_ERR("Failed to add GPIO callback!!");
 		return err;
 	}
+	LOG_INF("GPIO callback configured!!");
 
 	data->dev = dev;
 	memset(&(data->trigger_handler[0]), 0, sizeof(data->trigger_handler));
