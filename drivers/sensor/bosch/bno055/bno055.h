@@ -591,6 +591,10 @@ struct calib_data {
 #define BNO055_IRQ_ACC_MASK_SN_MOTION_DURATION 0x7E
 #define BNO055_IRQ_ACC_MASK_SN_MOTION_SET      0x01
 
+#define BNO055_IS_ACCEL_CHANNEL(val)                                                               \
+	((val == SENSOR_CHAN_ACCEL_XYZ) || (val == SENSOR_CHAN_ACCEL_X) ||                         \
+	 (val == SENSOR_CHAN_ACCEL_Y) || (val == SENSOR_CHAN_ACCEL_Z))
+
 /* GYR Settings FLAGS */
 #define BNO055_IRQ_GYR_SHIFT_AM_FILT           6
 #define BNO055_IRQ_GYR_SHIFT_AM_THRESHOLD      0
@@ -610,6 +614,13 @@ struct calib_data {
 #define BNO055_IRQ_GYR_MASK_AM_THRESHOLD      0x7F
 #define BNO055_IRQ_GYR_MASK_AM_AWAKE_DURATION 0x7F
 #define BNO055_IRQ_GYR_MASK_AM_SAMPLES        0x7F
+#define BNO055_IRQ_GYR_MASK_AN_MOTION_AXIS                                                         \
+	(BNO055_IRQ_GYR_SETTINGS_AN_MOTION_X | BNO055_IRQ_GYR_SETTINGS_AN_MOTION_Y |               \
+	 BNO055_IRQ_GYR_SETTINGS_AN_MOTION_Z)
+
+#define BNO055_IS_GYRO_CHANNEL(val)                                                                \
+	((val == SENSOR_CHAN_GYRO_XYZ) || (val == SENSOR_CHAN_GYRO_X) ||                           \
+	 (val == SENSOR_CHAN_GYRO_Y) || (val == SENSOR_CHAN_GYRO_Z))
 
 enum bno055_sensor_trigger_type {
 	BNO055_SENSOR_TRIG_HIGH_RATE = SENSOR_TRIG_PRIV_START + 0,

@@ -60,17 +60,17 @@ int main(void)
 	};
 	sensor_trigger_set(bno_dev, &trig_acc_am, acc_any_motion);
 
-	config.val1 = 0x01;
+	config.val1 = 0x02;
 	config.val2 = 0x02;
 	sensor_attr_set(bno_dev, SENSOR_CHAN_GYRO_XYZ, SENSOR_ATTR_SLOPE_DUR, &config);
-	config.val1 = 0x04;
+	config.val1 = 0x08;
 	config.val2 = 0x01; // Active Filter
 	sensor_attr_set(bno_dev, SENSOR_CHAN_GYRO_XYZ, SENSOR_ATTR_SLOPE_TH, &config);
-	//	struct sensor_trigger trig_gyr_am = {
-	//		.type = SENSOR_TRIG_DELTA,
-	//		.chan = SENSOR_CHAN_GYRO_XYZ,
-	//	};
-	//	sensor_trigger_set(bno_dev, &trig_gyr_am, gyr_any_motion);
+	struct sensor_trigger trig_gyr_am = {
+		.type = SENSOR_TRIG_DELTA,
+		.chan = SENSOR_CHAN_GYRO_XYZ,
+	};
+	sensor_trigger_set(bno_dev, &trig_gyr_am, gyr_any_motion);
 
 	while (1) {
 		sensor_sample_fetch(bno_dev);
