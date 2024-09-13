@@ -618,6 +618,13 @@ struct calib_data {
 	(BNO055_IRQ_GYR_SETTINGS_AN_MOTION_X | BNO055_IRQ_GYR_SETTINGS_AN_MOTION_Y |               \
 	 BNO055_IRQ_GYR_SETTINGS_AN_MOTION_Z)
 
+enum gyr_am_awake {
+	BNO055_GYR_AM_AWAKE_DURATION_8_SAMPLES = 0x00,
+	BNO055_GYR_AM_AWAKE_DURATION_16_SAMPLES = 0x01,
+	BNO055_GYR_AM_AWAKE_DURATION_32_SAMPLES = 0x02,
+	BNO055_GYR_AM_AWAKE_DURATION_64_SAMPLES = 0x03,
+};
+
 #define BNO055_IS_GYRO_CHANNEL(val)                                                                \
 	((val == SENSOR_CHAN_GYRO_XYZ) || (val == SENSOR_CHAN_GYRO_X) ||                           \
 	 (val == SENSOR_CHAN_GYRO_Y) || (val == SENSOR_CHAN_GYRO_Z))

@@ -48,8 +48,8 @@ int main(void)
 	config.val2 = 0;
 	sensor_attr_set(bno_dev, SENSOR_CHAN_ALL, BNO055_SENSOR_ATTR_POWER_MODE, &config);
 
-	config.val1 = 0x02;
-	config.val2 = 0x00;
+	config.val1 = BNO055_GYR_AM_AWAKE_DURATION_8_SAMPLES;
+	config.val2 = 0x02;
 	sensor_attr_set(bno_dev, SENSOR_CHAN_ACCEL_XYZ, SENSOR_ATTR_SLOPE_DUR, &config);
 	config.val1 = 0x04;
 	config.val2 = 0x00;
