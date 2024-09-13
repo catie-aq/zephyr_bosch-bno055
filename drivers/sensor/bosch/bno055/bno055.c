@@ -269,6 +269,57 @@ static int bno055_set_power(const struct device *dev, enum PowerMode power)
 	return 0;
 }
 
+static int bno055_set_attribut(const struct device *dev, uint8_t reg, uint8_t mask, uint8_t shift,
+			       uint8_t val)
+{
+	const struct bno055_config *config = dev->config;
+	struct bno055_data *data = dev->data;
+	uint8_t res;
+	int err;
+
+	LOG_DBG("FUNC ATTR[%d][%d]", reg, val);
+
+	enum OperatingMode mode = data->mode;
+	err = bno055_set_config(dev, BNO055_MODE_CONFIG, false);
+	if (err < 0) {
+		return err;
+	}
+
+	/* Switch to Page 1 */
+	bno055_set_page(dev, BNO055_PAGE_ONE);
+
+	err = i2c_reg_read_byte_dt(&config->i2c_bus, reg, &res);
+	if (err < 0) {
+		return err;
+	}
+
+	res &= ~mask;
+	res |= (val << shift) & mask;
+	err = i2c_reg_write_byte_dt(&config->i2c_bus, reg, res);
+	if (err < 0) {
+		return err;
+	}
+
+	err = i2c_reg_read_byte_dt(&config->i2c_bus, reg, &res);
+	if (err < 0) {
+		return err;
+	}
+
+	if ((res & mask) != (val << shift)) {
+		LOG_ERR("[EP_1] I2C communication compromised [%d]|[%d]!!", res & mask,
+			val << shift);
+		return -1;
+	}
+
+	err = bno055_set_config(dev, mode, mode < BNO055_MODE_IMU ? false : true);
+	if (err < 0) {
+		return err;
+	}
+
+	LOG_DBG("FUNC ATTR[%d][%d]", reg, (res & mask) >> shift);
+	return 0;
+}
+
 static int bno055_vector3_fetch(const struct device *dev, const uint8_t data_register,
 				struct vector3_data *data)
 {
@@ -478,7 +529,75 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				return -EINVAL;
 			}
 		}
+		break;
 
+	case SENSOR_CHAN_ACCEL_XYZ:
+		LOG_INF("SET ACC ATTR[%d][%d]", attr, val->val1);
+		switch (attr) {
+		case SENSOR_ATTR_SLOPE_TH:
+			LOG_DBG("ACC ATTR AM THRESHOLD");
+			err = bno055_set_attribut(dev, BNO055_REGISTER_ACC_ANY_MOTION_THRESHOLD,
+						  BNO055_IRQ_ACC_MASK_AM_THRESHOLD,
+						  BNO055_IRQ_ACC_SHIFT_AM, val->val1);
+			if (err < 0) {
+				return err;
+			}
+			break;
+
+		case SENSOR_ATTR_SLOPE_DUR:
+			LOG_DBG("ACC ATTR AM DURATION");
+			err = bno055_set_attribut(dev, BNO055_REGISTER_ACC_INT_SETTINGS,
+						  BNO055_IRQ_ACC_MASK_AM_DURATION,
+						  BNO055_IRQ_ACC_SHIFT_AM, val->val1);
+			if (err < 0) {
+				return err;
+			}
+			break;
+
+		default:
+			return -ENOTSUP;
+		}
+		break;
+
+	case SENSOR_CHAN_GYRO_XYZ:
+		LOG_INF("SET GYRO ATTR[%d][%d]", attr, val->val1);
+		switch (attr) {
+		case SENSOR_ATTR_SLOPE_TH:
+			LOG_DBG("ACC GYRO AM THRESHOLD");
+			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_AM_THRESHOLD,
+						  BNO055_IRQ_GYR_MASK_AM_THRESHOLD,
+						  BNO055_IRQ_GYR_SHIFT_AM_THRESHOLD, val->val1);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_INT_SETTINGS,
+						  BNO055_IRQ_GYR_SETTINGS_AM_FILT,
+						  BNO055_IRQ_GYR_SHIFT_AM_FILT, val->val2);
+			if (err < 0) {
+				return err;
+			}
+			break;
+
+		case SENSOR_ATTR_SLOPE_DUR:
+			LOG_DBG("ACC ATTR AM DURATION");
+			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_AM_SET,
+						  BNO055_IRQ_GYR_MASK_AM_AWAKE_DURATION,
+						  BNO055_IRQ_GYR_SHIFT_AM_AWAKE_DURATION,
+						  val->val1);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_AM_SET,
+						  BNO055_IRQ_GYR_MASK_AM_SAMPLES,
+						  BNO055_IRQ_GYR_SHIFT_AM_SAMPLES, val->val1);
+			if (err < 0) {
+				return err;
+			}
+			break;
+
+		default:
+			return -ENOTSUP;
+		}
 		break;
 
 	default:
