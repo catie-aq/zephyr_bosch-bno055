@@ -58,7 +58,7 @@ static int bno055_set_page(const struct device *dev, enum PageId page)
 	uint8_t reg;
 	int err;
 
-	LOG_INF("FUNC PAGE[%d]", page);
+	LOG_DBG("FUNC PAGE[%d]", page);
 	err = i2c_reg_read_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, &reg);
 	if (err < 0) {
 		return err;
@@ -71,7 +71,7 @@ static int bno055_set_page(const struct device *dev, enum PageId page)
 	}
 
 	if ((reg & BNO055_PAGE_ID_MASK) == page) {
-		LOG_INF("I2C page register already good!!");
+		LOG_DBG("I2C page register already good!!");
 		return 0;
 	}
 
@@ -94,7 +94,7 @@ static int bno055_set_page(const struct device *dev, enum PageId page)
 	}
 
 	data->current_page = reg & BNO055_PAGE_ID_MASK;
-	LOG_INF("FUNC PAGE[%d]", page);
+	LOG_DBG("FUNC PAGE[%d]", page);
 	return 0;
 }
 
@@ -105,7 +105,7 @@ static int bno055_set_config(const struct device *dev, enum OperatingMode mode, 
 	uint8_t reg;
 	int err;
 
-	LOG_INF("FUNC MODE[%d]", mode);
+	LOG_DBG("FUNC MODE[%d]", mode);
 
 	/* Switch to Page 0 */
 	err = bno055_set_page(dev, BNO055_PAGE_ZERO);
@@ -130,7 +130,7 @@ static int bno055_set_config(const struct device *dev, enum OperatingMode mode, 
 		if (err < 0) {
 			return err;
 		}
-		LOG_INF("MODE[%d]", BNO055_MODE_CONFIG);
+		LOG_DBG("MODE[%d]", BNO055_MODE_CONFIG);
 		k_sleep(K_MSEC(BNO055_TIMING_SWITCH_FROM_ANY));
 	}
 
@@ -147,7 +147,7 @@ static int bno055_set_config(const struct device *dev, enum OperatingMode mode, 
 	data->mode = reg & BNO055_OPERATION_MODE_MASK;
 
 	if (mode == BNO055_MODE_CONFIG) {
-		LOG_INF("I2C mode register already good!!");
+		LOG_DBG("I2C mode register already good!!");
 		return 0;
 	}
 
@@ -209,7 +209,7 @@ static int bno055_set_config(const struct device *dev, enum OperatingMode mode, 
 	}
 
 	data->mode = reg & BNO055_OPERATION_MODE_MASK;
-	LOG_INF("FUNC MODE[%d]", mode);
+	LOG_DBG("FUNC MODE[%d]", mode);
 	return 0;
 }
 
@@ -220,7 +220,7 @@ static int bno055_set_power(const struct device *dev, enum PowerMode power)
 	uint8_t reg;
 	int err;
 
-	LOG_INF("FUNC POWER[%d]", power);
+	LOG_DBG("FUNC POWER[%d]", power);
 
 	enum OperatingMode mode = data->mode;
 	err = bno055_set_config(dev, BNO055_MODE_CONFIG, false);
@@ -240,7 +240,7 @@ static int bno055_set_power(const struct device *dev, enum PowerMode power)
 	}
 
 	if ((reg & BNO055_POWER_MODE_MASK) == power) {
-		LOG_INF("I2C power register already good!!");
+		LOG_DBG("I2C power register already good!!");
 	} else {
 		err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_POWER_MODE, power);
 		if (err < 0) {
@@ -265,7 +265,7 @@ static int bno055_set_power(const struct device *dev, enum PowerMode power)
 		return err;
 	}
 
-	LOG_INF("FUNC POWER[%d]", power);
+	LOG_DBG("FUNC POWER[%d]", power);
 	return 0;
 }
 
@@ -333,7 +333,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 			LOG_INF("SET MODE[%d]", val->val1);
 			switch (val->val1) {
 			case BNO055_MODE_CONFIG:
-				LOG_INF("MODE BNO055_MODE_CONFIG");
+				LOG_DBG("MODE BNO055_MODE_CONFIG");
 				err = bno055_set_config(dev, BNO055_MODE_CONFIG, false);
 				if (err < 0) {
 					return err;
@@ -341,7 +341,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_ACC_ONLY:
-				LOG_INF("MODE BNO055_MODE_ACC_ONLY");
+				LOG_DBG("MODE BNO055_MODE_ACC_ONLY");
 				err = bno055_set_config(dev, BNO055_MODE_ACC_ONLY, false);
 				if (err < 0) {
 					return err;
@@ -349,7 +349,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_MAG_ONLY:
-				LOG_INF("MODE BNO055_MODE_MAG_ONLY");
+				LOG_DBG("MODE BNO055_MODE_MAG_ONLY");
 				err = bno055_set_config(dev, BNO055_MODE_MAG_ONLY, false);
 				if (err < 0) {
 					return err;
@@ -357,7 +357,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_GYRO_ONLY:
-				LOG_INF("MODE BNO055_MODE_GYRO_ONLY");
+				LOG_DBG("MODE BNO055_MODE_GYRO_ONLY");
 				err = bno055_set_config(dev, BNO055_MODE_GYRO_ONLY, false);
 				if (err < 0) {
 					return err;
@@ -365,7 +365,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_ACC_MAG:
-				LOG_INF("MODE BNO055_MODE_ACC_MAG");
+				LOG_DBG("MODE BNO055_MODE_ACC_MAG");
 				err = bno055_set_config(dev, BNO055_MODE_ACC_MAG, false);
 				if (err < 0) {
 					return err;
@@ -373,7 +373,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_ACC_GYRO:
-				LOG_INF("MODE BNO055_MODE_ACC_GYRO");
+				LOG_DBG("MODE BNO055_MODE_ACC_GYRO");
 				err = bno055_set_config(dev, BNO055_MODE_ACC_GYRO, false);
 				if (err < 0) {
 					return err;
@@ -381,7 +381,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_MAG_GYRO:
-				LOG_INF("MODE BNO055_MODE_MAG_GYRO");
+				LOG_DBG("MODE BNO055_MODE_MAG_GYRO");
 				err = bno055_set_config(dev, BNO055_MODE_MAG_GYRO, false);
 				if (err < 0) {
 					return err;
@@ -389,7 +389,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_ACC_MAG_GYRO:
-				LOG_INF("MODE BNO055_MODE_ACC_MAG_GYRO");
+				LOG_DBG("MODE BNO055_MODE_ACC_MAG_GYRO");
 				err = bno055_set_config(dev, BNO055_MODE_ACC_MAG_GYRO, false);
 				if (err < 0) {
 					return err;
@@ -397,7 +397,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_IMU:
-				LOG_INF("MODE BNO055_MODE_IMU");
+				LOG_DBG("MODE BNO055_MODE_IMU");
 				err = bno055_set_config(dev, BNO055_MODE_IMU, true);
 				if (err < 0) {
 					return err;
@@ -405,7 +405,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_COMPASS:
-				LOG_INF("MODE BNO055_MODE_COMPASS");
+				LOG_DBG("MODE BNO055_MODE_COMPASS");
 				err = bno055_set_config(dev, BNO055_MODE_COMPASS, true);
 				if (err < 0) {
 					return err;
@@ -413,7 +413,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_M4G:
-				LOG_INF("MODE BNO055_MODE_M4G");
+				LOG_DBG("MODE BNO055_MODE_M4G");
 				err = bno055_set_config(dev, BNO055_MODE_M4G, true);
 				if (err < 0) {
 					return err;
@@ -421,7 +421,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_NDOF_FMC_OFF:
-				LOG_INF("MODE BNO055_MODE_NDOF_FMC_OFF");
+				LOG_DBG("MODE BNO055_MODE_NDOF_FMC_OFF");
 				err = bno055_set_config(dev, BNO055_MODE_NDOF_FMC_OFF, true);
 				if (err < 0) {
 					return err;
@@ -429,7 +429,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_MODE_NDOF:
-				LOG_INF("MODE BNO055_MODE_NDOF");
+				LOG_DBG("MODE BNO055_MODE_NDOF");
 				err = bno055_set_config(dev, BNO055_MODE_NDOF, true);
 				if (err < 0) {
 					return err;
@@ -443,7 +443,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 			LOG_INF("SET POWER[%d]", val->val1);
 			switch (val->val1) {
 			case BNO055_POWER_NORMAL:
-				LOG_INF("POWER BNO055_POWER_NORMAL");
+				LOG_DBG("POWER BNO055_POWER_NORMAL");
 				err = bno055_set_power(dev, BNO055_POWER_NORMAL);
 				if (err < 0) {
 					return err;
@@ -451,7 +451,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_POWER_LOW_POWER:
-				LOG_INF("POWER BNO055_POWER_LOW_POWER");
+				LOG_DBG("POWER BNO055_POWER_LOW_POWER");
 				err = bno055_set_power(dev, BNO055_POWER_LOW_POWER);
 				if (err < 0) {
 					return err;
@@ -459,7 +459,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_POWER_SUSPEND:
-				LOG_INF("POWER BNO055_POWER_SUSPEND");
+				LOG_DBG("POWER BNO055_POWER_SUSPEND");
 				err = bno055_set_power(dev, BNO055_POWER_SUSPEND);
 				if (err < 0) {
 					return err;
@@ -467,7 +467,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				break;
 
 			case BNO055_POWER_INVALID:
-				LOG_INF("POWER BNO055_POWER_INVALID");
+				LOG_DBG("POWER BNO055_POWER_INVALID");
 				err = bno055_set_power(dev, BNO055_POWER_INVALID);
 				if (err < 0) {
 					return err;
@@ -497,11 +497,11 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 
 	switch (data->mode) {
 	case BNO055_MODE_CONFIG:
-		LOG_INF("CONFIG Mode no sample");
+		LOG_WRN("CONFIG Mode no sample");
 		break;
 
 	case BNO055_MODE_ACC_ONLY:
-		LOG_INF("ACC fetching..");
+		LOG_DBG("ACC fetching..");
 		err = bno055_vector3_fetch(dev, BNO055_REGISTER_ACC_DATA, &data->acc);
 		if (err < 0) {
 			return err;
@@ -509,7 +509,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 		break;
 
 	case BNO055_MODE_MAG_ONLY:
-		LOG_INF("MAG fetching..");
+		LOG_DBG("MAG fetching..");
 		err = bno055_vector3_fetch(dev, BNO055_REGISTER_MAG_DATA, &data->mag);
 		if (err < 0) {
 			return err;
@@ -517,7 +517,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 		break;
 
 	case BNO055_MODE_GYRO_ONLY:
-		LOG_INF("GYR fetching..");
+		LOG_DBG("GYR fetching..");
 		err = bno055_vector3_fetch(dev, BNO055_REGISTER_GYR_DATA, &data->gyr);
 		if (err < 0) {
 			return err;
@@ -525,7 +525,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 		break;
 
 	case BNO055_MODE_ACC_MAG:
-		LOG_INF("ACC_MAG fetching..");
+		LOG_DBG("ACC_MAG fetching..");
 		err = bno055_vector3_fetch(dev, BNO055_REGISTER_ACC_DATA, &data->acc);
 		if (err < 0) {
 			return err;
@@ -537,7 +537,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 		break;
 
 	case BNO055_MODE_ACC_GYRO:
-		LOG_INF("ACC_GYRO fetching..");
+		LOG_DBG("ACC_GYRO fetching..");
 		err = bno055_vector3_fetch(dev, BNO055_REGISTER_ACC_DATA, &data->acc);
 		if (err < 0) {
 			return err;
@@ -549,7 +549,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 		break;
 
 	case BNO055_MODE_MAG_GYRO:
-		LOG_INF("MAG_GYRO fetching..");
+		LOG_DBG("MAG_GYRO fetching..");
 		err = bno055_vector3_fetch(dev, BNO055_REGISTER_MAG_DATA, &data->mag);
 		if (err < 0) {
 			return err;
@@ -561,7 +561,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 		break;
 
 	case BNO055_MODE_ACC_MAG_GYRO:
-		LOG_INF("ACC_MAG_GYRO fetching..");
+		LOG_DBG("ACC_MAG_GYRO fetching..");
 		err = bno055_vector3_fetch(dev, BNO055_REGISTER_ACC_DATA, &data->acc);
 		if (err < 0) {
 			return err;
@@ -577,7 +577,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 		break;
 
 	case BNO055_MODE_IMU:
-		LOG_INF("IMU fetching..");
+		LOG_DBG("IMU fetching..");
 		err = bno055_vector3_fetch(dev, BNO055_REGISTER_EUL_DATA, &data->eul);
 		if (err < 0) {
 			return err;
@@ -601,7 +601,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 		break;
 
 	case BNO055_MODE_COMPASS:
-		LOG_INF("COMPASS fetching..");
+		LOG_DBG("COMPASS fetching..");
 		err = bno055_vector3_fetch(dev, BNO055_REGISTER_EUL_DATA, &data->eul);
 		if (err < 0) {
 			return err;
@@ -625,7 +625,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 		break;
 
 	case BNO055_MODE_M4G:
-		LOG_INF("M4G fetching..");
+		LOG_DBG("M4G fetching..");
 		err = bno055_vector3_fetch(dev, BNO055_REGISTER_EUL_DATA, &data->eul);
 		if (err < 0) {
 			return err;
@@ -649,7 +649,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 		break;
 
 	case BNO055_MODE_NDOF_FMC_OFF:
-		LOG_INF("NDOF_FMC_OFF fetching..");
+		LOG_DBG("NDOF_FMC_OFF fetching..");
 		err = bno055_vector3_fetch(dev, BNO055_REGISTER_EUL_DATA, &data->eul);
 		if (err < 0) {
 			return err;
@@ -673,7 +673,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 		break;
 
 	case BNO055_MODE_NDOF:
-		LOG_INF("NDOF fetching..");
+		LOG_DBG("NDOF fetching..");
 		err = bno055_vector3_fetch(dev, BNO055_REGISTER_EUL_DATA, &data->eul);
 		if (err < 0) {
 			return err;
@@ -1008,7 +1008,7 @@ static void bno055_gpio_callback_handler(const struct device *p_port, struct gpi
 {
 	ARG_UNUSED(p_port);
 	ARG_UNUSED(pins);
-	LOG_INF("Process GPIO callback!!");
+	LOG_DBG("Process GPIO callback!!");
 
 	struct bno055_data *data = CONTAINER_OF(p_cb, struct bno055_data, gpio_cb);
 
@@ -1192,7 +1192,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 {
 	struct bno055_data *data = dev->data;
 	int err;
-	LOG_INF("TRIGGER [%d][%d]", trig->type, trig->chan);
+	LOG_INF("SET TRIGGER [%d][%d]", trig->type, trig->chan);
 
 	if ((trig->type == SENSOR_TRIG_DATA_READY) && (trig->chan == SENSOR_CHAN_ACCEL_XYZ)) {
 		err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_BSX_DRDY,
@@ -1302,7 +1302,6 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 		return 0;
 	}
 
-	LOG_INF("TRIGGER [%d] [%d]", trig->type, trig->chan);
 	return -ENOTSUP;
 }
 #endif
