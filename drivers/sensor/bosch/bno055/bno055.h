@@ -580,7 +580,7 @@ struct calib_data {
 #define BNO055_IRQ_ACC_SETTINGS_AN_MOTION_Z (0x01 << 4)
 #define BNO055_IRQ_ACC_SETTINGS_HG_X        (0x01 << 5)
 #define BNO055_IRQ_ACC_SETTINGS_HG_Y        (0x01 << 6)
-#define BNO055_IRQ_ACC_SETTINGS_HG_2        (0x01 << 7)
+#define BNO055_IRQ_ACC_SETTINGS_HG_Z        (0x01 << 7)
 
 #define BNO055_IRQ_ACC_MASK_THRESHOLD   0xFF
 #define BNO055_IRQ_ACC_MASK_AM_DURATION BNO055_IRQ_ACC_SETTINGS_AM_DUR
@@ -594,10 +594,19 @@ struct calib_data {
 
 #define BNO055_IRQ_ACC_MASK_HG_DURATION  0xFF
 #define BNO055_IRQ_ACC_MASK_HG_THRESHOLD 0xFF
+#define BNO055_IRQ_ACC_MASK_HG_AXIS                                                                \
+	(BNO055_IRQ_ACC_SETTINGS_HG_X | BNO055_IRQ_ACC_SETTINGS_HG_Y | BNO055_IRQ_ACC_SETTINGS_HG_Z)
 
-enum acc_any_no_motion {
-	BNO055_ACC_AN_MOTION_NO = 0x00,
-	BNO055_ACC_AN_MOTION_ANY = 0x01,
+enum acc_threshold_type {
+	BNO055_ACC_THRESHOLD_AM = 0x00,
+	BNO055_ACC_THRESHOLD_NM = 0x01,
+	BNO055_ACC_THRESHOLD_HG = 0x02,
+};
+
+enum acc_duration_type {
+	BNO055_ACC_DURATION_AM = 0x00,
+	BNO055_ACC_DURATION_NM = 0x01,
+	BNO055_ACC_DURATION_HG = 0x02,
 };
 
 #define BNO055_IRQ_ACC_SNM_SHIFT      31
