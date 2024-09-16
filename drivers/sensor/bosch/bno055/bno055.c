@@ -640,7 +640,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 		LOG_INF("SET GYRO ATTR[%d][%d]", attr, val->val1);
 		switch (attr) {
 		case SENSOR_ATTR_SLOPE_TH:
-			LOG_DBG("ACC GYRO AM THRESHOLD");
+			LOG_DBG("GYRO ATTR AM THRESHOLD");
 			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_AM_THRESHOLD,
 						  BNO055_IRQ_GYR_MASK_AM_THRESHOLD,
 						  BNO055_IRQ_GYR_SHIFT_AM_THRESHOLD, val->val1);
@@ -656,7 +656,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 			break;
 
 		case SENSOR_ATTR_SLOPE_DUR:
-			LOG_DBG("ACC ATTR AM DURATION");
+			LOG_DBG("GYRO ATTR AM DURATION");
 			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_AM_SET,
 						  BNO055_IRQ_GYR_MASK_AM_AWAKE_DURATION,
 						  BNO055_IRQ_GYR_SHIFT_AM_AWAKE_DURATION,
@@ -667,6 +667,123 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_AM_SET,
 						  BNO055_IRQ_GYR_MASK_AM_SAMPLES,
 						  BNO055_IRQ_GYR_SHIFT_AM_SAMPLES, val->val1);
+			if (err < 0) {
+				return err;
+			}
+			break;
+
+		default:
+			return -ENOTSUP;
+		}
+		break;
+
+	case SENSOR_CHAN_GYRO_X:
+		LOG_INF("SET GYRO_X ATTR[%d]", attr);
+		switch (attr) {
+		case SENSOR_ATTR_HYSTERESIS:
+			LOG_DBG("GYRO_X ATTR HR THRESHOLD");
+			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_HIGH_RATE_X_SET,
+						  BNO055_IRQ_GYR_MASK_AM_THRESHOLD,
+						  BNO055_IRQ_GYR_SHIFT_AM_THRESHOLD,
+						  val->val1 & (BNO055_IRQ_GYR_MASK_AM_THRESHOLD >>
+							       BNO055_IRQ_GYR_SHIFT_AM_THRESHOLD));
+			if (err < 0) {
+				return err;
+			}
+			LOG_DBG("GYRO_X ATTR HR HYSTERESIS");
+			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_HIGH_RATE_X_SET,
+						  BNO055_IRQ_GYR_MASK_HR_HYSTERESIS,
+						  BNO055_IRQ_GYR_SHIFT_HR_HYSTERESIS,
+						  val->val2 & (BNO055_IRQ_GYR_MASK_HR_HYSTERESIS >>
+							       BNO055_IRQ_GYR_SHIFT_HR_HYSTERESIS));
+			if (err < 0) {
+				return err;
+			}
+			break;
+
+		case SENSOR_ATTR_SLOPE_DUR:
+			LOG_DBG("GYRO_X ATTR HR DURATION");
+			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_DURATION_X,
+						  BNO055_IRQ_GYR_MASK_HR_DURATION,
+						  BNO055_IRQ_GYR_NO_SHIFT, val->val1);
+			if (err < 0) {
+				return err;
+			}
+			break;
+
+		default:
+			return -ENOTSUP;
+		}
+		break;
+
+	case SENSOR_CHAN_GYRO_Y:
+		LOG_INF("SET GYRO_Y ATTR[%d]", attr);
+		switch (attr) {
+		case SENSOR_ATTR_HYSTERESIS:
+			LOG_DBG("GYRO_Y ATTR HR THRESHOLD");
+			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_HIGH_RATE_Y_SET,
+						  BNO055_IRQ_GYR_MASK_AM_THRESHOLD,
+						  BNO055_IRQ_GYR_SHIFT_AM_THRESHOLD,
+						  val->val1 & (BNO055_IRQ_GYR_MASK_AM_THRESHOLD >>
+							       BNO055_IRQ_GYR_SHIFT_AM_THRESHOLD));
+			if (err < 0) {
+				return err;
+			}
+			LOG_DBG("GYRO_Y ATTR HR HYSTERESIS");
+			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_HIGH_RATE_Y_SET,
+						  BNO055_IRQ_GYR_MASK_HR_HYSTERESIS,
+						  BNO055_IRQ_GYR_SHIFT_HR_HYSTERESIS,
+						  val->val2 & (BNO055_IRQ_GYR_MASK_HR_HYSTERESIS >>
+							       BNO055_IRQ_GYR_SHIFT_HR_HYSTERESIS));
+			if (err < 0) {
+				return err;
+			}
+			break;
+
+		case SENSOR_ATTR_SLOPE_DUR:
+			LOG_DBG("GYRO_Y ATTR HR DURATION");
+			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_DURATION_Y,
+						  BNO055_IRQ_GYR_MASK_HR_DURATION,
+						  BNO055_IRQ_GYR_NO_SHIFT, val->val1);
+			if (err < 0) {
+				return err;
+			}
+			break;
+
+		default:
+			return -ENOTSUP;
+		}
+		break;
+
+	case SENSOR_CHAN_GYRO_Z:
+		LOG_INF("SET GYRO_X ATTR[%d]", attr);
+		switch (attr) {
+		case SENSOR_ATTR_HYSTERESIS:
+			LOG_DBG("GYRO_Z ATTR HR THRESHOLD");
+			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_HIGH_RATE_Z_SET,
+						  BNO055_IRQ_GYR_MASK_AM_THRESHOLD,
+						  BNO055_IRQ_GYR_SHIFT_AM_THRESHOLD,
+						  val->val1 & (BNO055_IRQ_GYR_MASK_AM_THRESHOLD >>
+							       BNO055_IRQ_GYR_SHIFT_AM_THRESHOLD));
+			if (err < 0) {
+				return err;
+			}
+			LOG_DBG("GYRO_Z ATTR HR HYSTERESIS");
+			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_HIGH_RATE_Z_SET,
+						  BNO055_IRQ_GYR_MASK_HR_HYSTERESIS,
+						  BNO055_IRQ_GYR_SHIFT_HR_HYSTERESIS,
+						  val->val2 & (BNO055_IRQ_GYR_MASK_HR_HYSTERESIS >>
+							       BNO055_IRQ_GYR_SHIFT_HR_HYSTERESIS));
+			if (err < 0) {
+				return err;
+			}
+			break;
+
+		case SENSOR_ATTR_SLOPE_DUR:
+			LOG_DBG("GYRO_Z ATTR HR DURATION");
+			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_DURATION_Z,
+						  BNO055_IRQ_GYR_MASK_HR_DURATION,
+						  BNO055_IRQ_GYR_NO_SHIFT, val->val1);
 			if (err < 0) {
 				return err;
 			}
@@ -1634,7 +1751,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 		if (trig->chan == SENSOR_CHAN_GYRO_XYZ) {
 			LOG_DBG("TRIGGER SET GYR_XYZ High RATE");
 			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_AM,
-							  BNO055_IRQ_GYR_MASK_AN_MOTION_AXIS,
+							  BNO055_IRQ_GYR_MASK_HR_AXIS,
 							  handler != NULL);
 			if (err < 0) {
 				return err;

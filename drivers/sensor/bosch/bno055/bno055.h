@@ -631,8 +631,8 @@ enum acc_sn_motion_duration {
 	BNO055_ACC_SN_DURATION_14_SECONDS = 0x0E,
 	BNO055_ACC_SN_DURATION_15_SECONDS = 0x0F,
 	BNO055_ACC_SN_DURATION_16_SECONDS = 0x10,
-	BNO055_ACC_SN_DURATION_20_SECONDS = 0x14,
 
+	BNO055_ACC_SN_DURATION_20_SECONDS = 0x14,
 	BNO055_ACC_SN_DURATION_24_SECONDS = 0x18,
 	BNO055_ACC_SN_DURATION_28_SECONDS = 0x1C,
 	BNO055_ACC_SN_DURATION_32_SECONDS = 0x20,
@@ -683,21 +683,17 @@ enum acc_sn_motion_duration {
 	BNO055_ACC_SN_DURATION_336_SECONDS = 0x150,
 };
 
-enum acc_slow_no_motion {
-	BNO055_ACC_SLOW_MOTION = 0x00,
-	BNO055_ACC_NO_MOTION = 0x01,
-};
-
 #define BNO055_IS_ACCEL_CHANNEL(val)                                                               \
 	((val == SENSOR_CHAN_ACCEL_XYZ) || (val == SENSOR_CHAN_ACCEL_X) ||                         \
 	 (val == SENSOR_CHAN_ACCEL_Y) || (val == SENSOR_CHAN_ACCEL_Z))
 
 /* GYR Settings FLAGS */
+#define BNO055_IRQ_GYR_NO_SHIFT                0
 #define BNO055_IRQ_GYR_SHIFT_AM_FILT           6
-#define BNO055_IRQ_GYR_SHIFT_AM_THRESHOLD      0
 #define BNO055_IRQ_GYR_SHIFT_AM_THRESHOLD      0
 #define BNO055_IRQ_GYR_SHIFT_AM_AWAKE_DURATION 2
 #define BNO055_IRQ_GYR_SHIFT_AM_SAMPLES        0
+#define BNO055_IRQ_GYR_SHIFT_HR_HYSTERESIS     5
 
 #define BNO055_IRQ_GYR_SETTINGS_AN_MOTION_X (0x01 << 0)
 #define BNO055_IRQ_GYR_SETTINGS_AN_MOTION_Y (0x01 << 1)
@@ -722,7 +718,10 @@ enum gyr_am_awake {
 	BNO055_GYR_AM_AWAKE_DURATION_64_SAMPLES = 0x03,
 };
 
-#define BNO055_IRQ_GYR_MASK_AN_MOTION_AXIS                                                         \
+#define BNO055_IRQ_GYR_MASK_HR_THRESHOLD  (0x1F << BNO055_IRQ_ACC_NO_SHIFT)
+#define BNO055_IRQ_GYR_MASK_HR_HYSTERESIS (0x03 << BNO055_IRQ_GYR_SHIFT_HR_HYSTERESIS)
+#define BNO055_IRQ_GYR_MASK_HR_DURATION   0xFF
+#define BNO055_IRQ_GYR_MASK_HR_AXIS                                                                \
 	(BNO055_IRQ_GYR_SETTINGS_HR_X | BNO055_IRQ_GYR_SETTINGS_HR_Y | BNO055_IRQ_GYR_SETTINGS_HR_Z)
 
 #define BNO055_IS_GYRO_CHANNEL(val)                                                                \
