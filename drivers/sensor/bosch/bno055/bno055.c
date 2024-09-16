@@ -536,19 +536,24 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 		switch (attr) {
 		case SENSOR_ATTR_SLOPE_TH:
 			LOG_DBG("ACC ATTR AM THRESHOLD");
-			err = bno055_set_attribut(dev,
-						  (val->val1 == BNO055_ACC_AN_MOTION_ANY)
-							  ? BNO055_REGISTER_ACC_ANY_MOTION_THRESHOLD
-							  : BNO055_REGISTER_ACC_NO_MOTION_THRESHOLD,
-						  (val->val1 == BNO055_ACC_AN_MOTION_ANY)
-							  ? BNO055_IRQ_ACC_MASK_THRESHOLD
-							  : BNO055_IRQ_ACC_MASK_SNM_THRESHOLD,
-						  (val->val1 == BNO055_ACC_AN_MOTION_ANY)
-							  ? BNO055_IRQ_ACC_SHIFT_AM
-							  : BNO055_IRQ_ACC_SHIFT_SNM,
-						  val->val2);
-			if (err < 0) {
-				return err;
+			if (val->val1 == BNO055_ACC_AN_MOTION_ANY) {
+				err = bno055_set_attribut(dev,
+							  BNO055_REGISTER_ACC_ANY_MOTION_THRESHOLD,
+							  BNO055_IRQ_ACC_MASK_THRESHOLD,
+							  BNO055_IRQ_ACC_SHIFT_AM, val->val2);
+				if (err < 0) {
+					return err;
+				}
+			} else if (val->val1 == BNO055_ACC_AN_MOTION_NO) {
+				err = bno055_set_attribut(dev,
+							  BNO055_REGISTER_ACC_NO_MOTION_THRESHOLD,
+							  BNO055_IRQ_ACC_MASK_SNM_THRESHOLD,
+							  BNO055_IRQ_ACC_SHIFT_SNM, val->val2);
+				if (err < 0) {
+					return err;
+				}
+			} else {
+				return -ENOTSUP;
 			}
 			break;
 
