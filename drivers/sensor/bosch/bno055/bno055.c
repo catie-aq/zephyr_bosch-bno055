@@ -1437,7 +1437,8 @@ static int bno055_trigger_configuation(const struct device *dev, const struct se
 
 	uint8_t reg[2];
 	if ((trig->type == SENSOR_TRIG_DELTA) || (trig->type == SENSOR_TRIG_STATIONARY) ||
-	    (trig->type == (enum sensor_trigger_type)BNO055_SENSOR_TRIG_HIGH_G)) {
+	    (trig->type == (enum sensor_trigger_type)BNO055_SENSOR_TRIG_HIGH_G) ||
+	    (trig->type == (enum sensor_trigger_type)BNO055_SENSOR_TRIG_HIGH_RATE)) {
 		uint8_t i2c_reg = BNO055_REGISTER_CHIP_ID;
 		uint8_t reg_mask = BNO055_REGISTER_CHIP_ID;
 		if ((trig->chan == SENSOR_CHAN_ACCEL_XYZ) || (trig->chan == SENSOR_CHAN_ACCEL_X) ||
@@ -1453,6 +1454,9 @@ static int bno055_trigger_configuation(const struct device *dev, const struct se
 			   (trig->chan == SENSOR_CHAN_GYRO_Z)) {
 			i2c_reg = BNO055_REGISTER_GYR_INT_SETTINGS;
 			reg_mask = BNO055_IRQ_GYR_MASK_AN_MOTION_AXIS;
+			if (trig->type == (enum sensor_trigger_type)BNO055_SENSOR_TRIG_HIGH_RATE) {
+				reg_mask = BNO055_IRQ_GYR_MASK_HR_AXIS;
+			}
 		}
 
 		err = i2c_reg_read_byte_dt(&config->i2c_bus, i2c_reg, &reg[0]);
