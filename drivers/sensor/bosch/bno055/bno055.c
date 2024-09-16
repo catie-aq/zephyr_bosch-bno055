@@ -535,8 +535,8 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 		LOG_INF("SET ACC ATTR[%d][%d]", attr, val->val1);
 		switch (attr) {
 		case SENSOR_ATTR_SLOPE_TH:
-			LOG_DBG("ACC ATTR AM THRESHOLD");
 			if (val->val1 == BNO055_ACC_THRESHOLD_AM) {
+				LOG_DBG("ACC ATTR AM THRESHOLD");
 				err = bno055_set_attribut(dev,
 							  BNO055_REGISTER_ACC_ANY_MOTION_THRESHOLD,
 							  BNO055_IRQ_ACC_MASK_THRESHOLD,
@@ -545,6 +545,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 					return err;
 				}
 			} else if (val->val1 == BNO055_ACC_THRESHOLD_NM) {
+				LOG_DBG("ACC ATTR NM THRESHOLD");
 				err = bno055_set_attribut(dev,
 							  BNO055_REGISTER_ACC_NO_MOTION_THRESHOLD,
 							  BNO055_IRQ_ACC_MASK_SNM_THRESHOLD,
@@ -553,6 +554,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 					return err;
 				}
 			} else if (val->val1 == BNO055_ACC_THRESHOLD_HG) {
+				LOG_DBG("ACC ATTR HG THRESHOLD");
 				err = bno055_set_attribut(
 					dev, BNO055_REGISTER_ACC_HIGH_GRAVITY_THRESHOLD,
 					BNO055_IRQ_ACC_MASK_HG_THRESHOLD, BNO055_IRQ_ACC_NO_SHIFT,
@@ -566,8 +568,8 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 			break;
 
 		case SENSOR_ATTR_SLOPE_DUR:
-			LOG_DBG("ACC ATTR AM DURATION");
 			if (val->val1 == BNO055_ACC_DURATION_AM) {
+				LOG_DBG("ACC ATTR AM DURATION");
 				err = bno055_set_attribut(dev, BNO055_REGISTER_ACC_INT_SETTINGS,
 							  BNO055_IRQ_ACC_MASK_AM_DURATION,
 							  BNO055_IRQ_ACC_SHIFT_AM, val->val2);
@@ -575,20 +577,51 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 					return err;
 				}
 			} else if (val->val1 == BNO055_ACC_DURATION_NM) {
-				err = bno055_set_attribut(dev, BNO055_REGISTER_ACC_NO_MOTION_SET,
-							  BNO055_IRQ_ACC_MASK_SNM_DURATION,
-							  BNO055_IRQ_ACC_SHIFT_SNM, val->val2);
+				LOG_DBG("ACC ATTR NM DURATION");
+				uint8_t snm = (val->val2 >> BNO055_IRQ_ACC_SNM_SHIFT);
+				uint32_t duration = val->val2 & (~BNO055_IRQ_ACC_SN_MOTION_NO);
+				uint8_t value = duration & (BNO055_IRQ_ACC_MASK_SLOW_DURATION >>
+							    BNO055_IRQ_ACC_SHIFT_SNM);
+
+				if (snm == BNO055_IRQ_ACC_SN_MOTION_NO) {
+					value = (duration > BNO055_ACC_SN_DURATION_80_SECONDS)
+							? (0x01 << 5)
+							: 0x00;
+					if (duration > BNO055_ACC_SN_DURATION_80_SECONDS) {
+						value |= ((duration - 88) >>
+							  3); // duration = (reg * 8) + 88
+					} else {
+						value |= (duration >
+							  BNO055_ACC_SN_DURATION_20_SECONDS)
+								 ? (0x01 << 4)
+								 : 0x00;
+						if (duration > BNO055_ACC_SN_DURATION_20_SECONDS) {
+							value |= ((duration - 20) >>
+								  2); // duration = (reg * 4) + 20
+						} else {
+							value |= ((duration - 1) >>
+								  0); // duration = (reg * 1) + 1
+						}
+					}
+				}
+
+				err = bno055_set_attribut(
+					dev, BNO055_REGISTER_ACC_NO_MOTION_SET,
+					(snm == BNO055_IRQ_ACC_SN_MOTION_NO)
+						? BNO055_IRQ_ACC_MASK_SNM_DURATION
+						: BNO055_IRQ_ACC_MASK_SLOW_DURATION,
+					BNO055_IRQ_ACC_SHIFT_SNM, value);
 				if (err < 0) {
 					return err;
 				}
 				err = bno055_set_attribut(dev, BNO055_REGISTER_ACC_NO_MOTION_SET,
 							  BNO055_IRQ_ACC_MASK_SNM_SET,
-							  BNO055_IRQ_ACC_NO_SHIFT,
-							  (val->val2 >> BNO055_IRQ_ACC_SNM_SHIFT));
+							  BNO055_IRQ_ACC_NO_SHIFT, snm);
 				if (err < 0) {
 					return err;
 				}
 			} else if (val->val1 == BNO055_ACC_DURATION_HG) {
+				LOG_DBG("ACC ATTR HG DURATION");
 				err = bno055_set_attribut(dev,
 							  BNO055_REGISTER_ACC_HIGH_GRAVITY_DURATION,
 							  BNO055_IRQ_ACC_MASK_HG_DURATION,
