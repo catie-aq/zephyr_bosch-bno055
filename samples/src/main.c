@@ -9,19 +9,30 @@
 #include <bno055.h> // Required for custom SENSOR_CHAN_*
 
 static const struct device *const bno_dev = DEVICE_DT_GET(DT_NODELABEL(bno0550));
+static struct sensor_trigger trig_acc_asn;
+static struct sensor_trigger trig_gyr_am;
+
+static bool trigger_an_motion = false;
 
 void acc_data_ready(const struct device *dev, const struct sensor_trigger *trigger)
 {
 	printk("BSX data ready!!\n");
 }
 
-void acc_any_motion(const struct device *dev, const struct sensor_trigger *trigger)
+void acc_an_motion(const struct device *dev, const struct sensor_trigger *trigger)
 {
-	printk("ACC any motion interrupt!!\n");
+	if (trigger->type == SENSOR_TRIG_DELTA) {
+		printk("ACC any motion interrupt!!\n");
+	} else if (trigger->type == SENSOR_TRIG_STATIONARY) {
+		printk("ACC no motion interrupt!!\n");
+	} else {
+		printk("Unknown interrupt!!\n");
+	}
 }
 
 void gyr_any_motion(const struct device *dev, const struct sensor_trigger *trigger)
 {
+	printk("TRIGGER[%d][%d]\n", trigger->type, trigger->chan);
 	printk("GYR any motion interrupt!!\n");
 }
 
@@ -48,28 +59,36 @@ int main(void)
 	config.val2 = 0;
 	sensor_attr_set(bno_dev, SENSOR_CHAN_ALL, BNO055_SENSOR_ATTR_POWER_MODE, &config);
 
-	config.val1 = BNO055_GYR_AM_AWAKE_DURATION_8_SAMPLES;
-	config.val2 = 0x02;
-	sensor_attr_set(bno_dev, SENSOR_CHAN_ACCEL_XYZ, SENSOR_ATTR_SLOPE_DUR, &config);
-	config.val1 = 0x04;
-	config.val2 = 0x00;
-	sensor_attr_set(bno_dev, SENSOR_CHAN_ACCEL_XYZ, SENSOR_ATTR_SLOPE_TH, &config);
-	struct sensor_trigger trig_acc_am = {
-		.type = SENSOR_TRIG_DELTA,
-		.chan = SENSOR_CHAN_ACCEL_XYZ,
-	};
-	sensor_trigger_set(bno_dev, &trig_acc_am, acc_any_motion);
+	if (trigger_an_motion) {
+		config.val1 = BNO055_ACC_AN_MOTION_ANY;
+		config.val2 = 0x02;
+		sensor_attr_set(bno_dev, SENSOR_CHAN_ACCEL_XYZ, SENSOR_ATTR_SLOPE_DUR, &config);
+		config.val1 = BNO055_ACC_AN_MOTION_ANY;
+		config.val2 = 0x04;
+		sensor_attr_set(bno_dev, SENSOR_CHAN_ACCEL_XYZ, SENSOR_ATTR_SLOPE_TH, &config);
+		trig_acc_asn.type = SENSOR_TRIG_DELTA;
+		trig_acc_asn.chan = SENSOR_CHAN_ACCEL_XYZ;
+		sensor_trigger_set(bno_dev, &trig_acc_asn, acc_an_motion);
+	} else {
+		config.val1 = BNO055_ACC_AN_MOTION_NO;
+		config.val2 = BNO055_IRQ_ACC_SN_MOTION_NO || BNO055_ACC_SN_DURATION_1_SECONDS;
+		sensor_attr_set(bno_dev, SENSOR_CHAN_ACCEL_XYZ, SENSOR_ATTR_SLOPE_DUR, &config);
+		config.val1 = BNO055_ACC_AN_MOTION_ANY;
+		config.val2 = 0x04;
+		sensor_attr_set(bno_dev, SENSOR_CHAN_ACCEL_XYZ, SENSOR_ATTR_SLOPE_TH, &config);
+		trig_acc_asn.type = SENSOR_TRIG_STATIONARY;
+		trig_acc_asn.chan = SENSOR_CHAN_ACCEL_XYZ;
+		sensor_trigger_set(bno_dev, &trig_acc_asn, acc_an_motion);
+	}
 
 	config.val1 = 0x02;
-	config.val2 = 0x02;
+	config.val2 = BNO055_GYR_AM_AWAKE_DURATION_8_SAMPLES;
 	sensor_attr_set(bno_dev, SENSOR_CHAN_GYRO_XYZ, SENSOR_ATTR_SLOPE_DUR, &config);
 	config.val1 = 0x08;
 	config.val2 = 0x01; // Active Filter
 	sensor_attr_set(bno_dev, SENSOR_CHAN_GYRO_XYZ, SENSOR_ATTR_SLOPE_TH, &config);
-	struct sensor_trigger trig_gyr_am = {
-		.type = SENSOR_TRIG_DELTA,
-		.chan = SENSOR_CHAN_GYRO_XYZ,
-	};
+	trig_gyr_am.type = SENSOR_TRIG_DELTA;
+	trig_gyr_am.chan = SENSOR_CHAN_GYRO_XYZ;
 	sensor_trigger_set(bno_dev, &trig_gyr_am, gyr_any_motion);
 
 	while (1) {
