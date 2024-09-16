@@ -1624,11 +1624,45 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 	}
 
 	if ((trig->type == (enum sensor_trigger_type)BNO055_SENSOR_TRIG_HIGH_RATE) &&
-	    (trig->chan == SENSOR_CHAN_GYRO_XYZ)) {
+	    BNO055_IS_GYRO_CHANNEL(trig->chan)) {
 		err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_HIGH_RATE,
 						  BNO055_IRQ_MASK_GYR_HIGH_RATE, handler != NULL);
 		if (err < 0) {
 			return err;
+		}
+
+		if (trig->chan == SENSOR_CHAN_GYRO_XYZ) {
+			LOG_DBG("TRIGGER SET GYR_XYZ High RATE");
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_AM,
+							  BNO055_IRQ_GYR_MASK_AN_MOTION_AXIS,
+							  handler != NULL);
+			if (err < 0) {
+				return err;
+			}
+		} else if (trig->chan == SENSOR_CHAN_GYRO_X) {
+			LOG_DBG("TRIGGER SET GYR_X High RATE");
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_AM,
+							  BNO055_IRQ_GYR_SETTINGS_HR_X,
+							  handler != NULL);
+			if (err < 0) {
+				return err;
+			}
+		} else if (trig->chan == SENSOR_CHAN_GYRO_Y) {
+			LOG_DBG("TRIGGER SET GYR_Y High RATE");
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_AM,
+							  BNO055_IRQ_GYR_SETTINGS_HR_Y,
+							  handler != NULL);
+			if (err < 0) {
+				return err;
+			}
+		} else if (trig->chan == SENSOR_CHAN_GYRO_Z) {
+			LOG_DBG("TRIGGER SET GYR_Z High RATE");
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_AM,
+							  BNO055_IRQ_GYR_SETTINGS_HR_Z,
+							  handler != NULL);
+			if (err < 0) {
+				return err;
+			}
 		}
 
 		data->trigger_handler[BNO055_IRQ_GYR_HIGH_RATE] = handler;

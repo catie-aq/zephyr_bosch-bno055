@@ -722,6 +722,9 @@ enum gyr_am_awake {
 	BNO055_GYR_AM_AWAKE_DURATION_64_SAMPLES = 0x03,
 };
 
+#define BNO055_IRQ_GYR_MASK_AN_MOTION_AXIS                                                         \
+	(BNO055_IRQ_GYR_SETTINGS_HR_X | BNO055_IRQ_GYR_SETTINGS_HR_Y | BNO055_IRQ_GYR_SETTINGS_HR_Z)
+
 #define BNO055_IS_GYRO_CHANNEL(val)                                                                \
 	((val == SENSOR_CHAN_GYRO_XYZ) || (val == SENSOR_CHAN_GYRO_X) ||                           \
 	 (val == SENSOR_CHAN_GYRO_Y) || (val == SENSOR_CHAN_GYRO_Z))
