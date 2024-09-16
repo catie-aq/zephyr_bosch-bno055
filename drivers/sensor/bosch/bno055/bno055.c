@@ -536,7 +536,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 		switch (attr) {
 		case SENSOR_ATTR_SLOPE_TH:
 			LOG_DBG("ACC ATTR AM THRESHOLD");
-			if (val->val1 == BNO055_ACC_AN_MOTION_ANY) {
+			if (val->val1 == BNO055_ACC_THRESHOLD_AM) {
 				err = bno055_set_attribut(dev,
 							  BNO055_REGISTER_ACC_ANY_MOTION_THRESHOLD,
 							  BNO055_IRQ_ACC_MASK_THRESHOLD,
@@ -544,11 +544,19 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 				if (err < 0) {
 					return err;
 				}
-			} else if (val->val1 == BNO055_ACC_AN_MOTION_NO) {
+			} else if (val->val1 == BNO055_ACC_THRESHOLD_NM) {
 				err = bno055_set_attribut(dev,
 							  BNO055_REGISTER_ACC_NO_MOTION_THRESHOLD,
 							  BNO055_IRQ_ACC_MASK_SNM_THRESHOLD,
 							  BNO055_IRQ_ACC_SHIFT_SNM, val->val2);
+				if (err < 0) {
+					return err;
+				}
+			} else if (val->val1 == BNO055_ACC_THRESHOLD_HG) {
+				err = bno055_set_attribut(
+					dev, BNO055_REGISTER_ACC_HIGH_GRAVITY_THRESHOLD,
+					BNO055_IRQ_ACC_MASK_HG_THRESHOLD, BNO055_IRQ_ACC_NO_SHIFT,
+					val->val2);
 				if (err < 0) {
 					return err;
 				}
@@ -559,14 +567,14 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 
 		case SENSOR_ATTR_SLOPE_DUR:
 			LOG_DBG("ACC ATTR AM DURATION");
-			if (val->val1 == BNO055_ACC_AN_MOTION_ANY) {
+			if (val->val1 == BNO055_ACC_DURATION_AM) {
 				err = bno055_set_attribut(dev, BNO055_REGISTER_ACC_INT_SETTINGS,
 							  BNO055_IRQ_ACC_MASK_AM_DURATION,
 							  BNO055_IRQ_ACC_SHIFT_AM, val->val2);
 				if (err < 0) {
 					return err;
 				}
-			} else if (val->val1 == BNO055_ACC_AN_MOTION_NO) {
+			} else if (val->val1 == BNO055_ACC_DURATION_NM) {
 				err = bno055_set_attribut(dev, BNO055_REGISTER_ACC_NO_MOTION_SET,
 							  BNO055_IRQ_ACC_MASK_SNM_DURATION,
 							  BNO055_IRQ_ACC_SHIFT_SNM, val->val2);
@@ -577,6 +585,14 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 							  BNO055_IRQ_ACC_MASK_SNM_SET,
 							  BNO055_IRQ_ACC_NO_SHIFT,
 							  (val->val2 >> BNO055_IRQ_ACC_SNM_SHIFT));
+				if (err < 0) {
+					return err;
+				}
+			} else if (val->val1 == BNO055_ACC_DURATION_HG) {
+				err = bno055_set_attribut(dev,
+							  BNO055_REGISTER_ACC_HIGH_GRAVITY_DURATION,
+							  BNO055_IRQ_ACC_MASK_HG_DURATION,
+							  BNO055_IRQ_ACC_NO_SHIFT, val->val2);
 				if (err < 0) {
 					return err;
 				}
@@ -1273,13 +1289,17 @@ static int bno055_trigger_configuation(const struct device *dev, const struct se
 	bno055_set_page(dev, BNO055_PAGE_ONE);
 
 	uint8_t reg[2];
-	if ((trig->type == SENSOR_TRIG_DELTA) || (trig->type == SENSOR_TRIG_STATIONARY)) {
+	if ((trig->type == SENSOR_TRIG_DELTA) || (trig->type == SENSOR_TRIG_STATIONARY) ||
+	    (trig->type == (enum sensor_trigger_type)BNO055_SENSOR_TRIG_HIGH_G)) {
 		uint8_t i2c_reg = BNO055_REGISTER_CHIP_ID;
 		uint8_t reg_mask = BNO055_REGISTER_CHIP_ID;
 		if ((trig->chan == SENSOR_CHAN_ACCEL_XYZ) || (trig->chan == SENSOR_CHAN_ACCEL_X) ||
 		    (trig->chan == SENSOR_CHAN_ACCEL_Y) || (trig->chan == SENSOR_CHAN_ACCEL_Z)) {
 			i2c_reg = BNO055_REGISTER_ACC_INT_SETTINGS;
 			reg_mask = BNO055_IRQ_ACC_MASK_AN_MOTION_AXIS;
+			if (trig->type == (enum sensor_trigger_type)BNO055_SENSOR_TRIG_HIGH_G) {
+				reg_mask = BNO055_IRQ_ACC_MASK_HG_AXIS;
+			}
 		} else if ((trig->chan == SENSOR_CHAN_GYRO_XYZ) ||
 			   (trig->chan == SENSOR_CHAN_GYRO_X) ||
 			   (trig->chan == SENSOR_CHAN_GYRO_Y) ||
@@ -1528,7 +1548,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 	if ((trig->type == (enum sensor_trigger_type)BNO055_SENSOR_TRIG_HIGH_G) &&
 	    (trig->chan == SENSOR_CHAN_ACCEL_XYZ)) {
 		err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_HIGH_G,
-						  BNO055_IRQ_MASK_ACC_HIGH_G, handler != NULL);
+						  BNO055_IRQ_ACC_MASK_HG_AXIS, handler != NULL);
 		if (err < 0) {
 			return err;
 		}
