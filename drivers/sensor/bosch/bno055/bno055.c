@@ -588,19 +588,16 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 							? (0x01 << 5)
 							: 0x00;
 					if (duration > BNO055_ACC_SN_DURATION_80_SECONDS) {
-						value |= ((duration - 88) >>
-							  3); // duration = (reg * 8) + 88
+						value |= ((duration - 88) >> 3);
 					} else {
 						value |= (duration >
 							  BNO055_ACC_SN_DURATION_20_SECONDS)
 								 ? (0x01 << 4)
 								 : 0x00;
 						if (duration > BNO055_ACC_SN_DURATION_20_SECONDS) {
-							value |= ((duration - 20) >>
-								  2); // duration = (reg * 4) + 20
+							value |= ((duration - 20) >> 2);
 						} else {
-							value |= ((duration - 1) >>
-								  0); // duration = (reg * 1) + 1
+							value |= ((duration - 1) >> 0);
 						}
 					}
 				}
