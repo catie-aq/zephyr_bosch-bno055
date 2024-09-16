@@ -536,9 +536,17 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 		switch (attr) {
 		case SENSOR_ATTR_SLOPE_TH:
 			LOG_DBG("ACC ATTR AM THRESHOLD");
-			err = bno055_set_attribut(dev, BNO055_REGISTER_ACC_ANY_MOTION_THRESHOLD,
-						  BNO055_IRQ_ACC_MASK_AM_THRESHOLD,
-						  BNO055_IRQ_ACC_SHIFT_AM, val->val1);
+			err = bno055_set_attribut(dev,
+						  (val->val1 == BNO055_ACC_AN_MOTION_ANY)
+							  ? BNO055_REGISTER_ACC_ANY_MOTION_THRESHOLD
+							  : BNO055_REGISTER_ACC_NO_MOTION_THRESHOLD,
+						  (val->val1 == BNO055_ACC_AN_MOTION_ANY)
+							  ? BNO055_IRQ_ACC_MASK_THRESHOLD
+							  : BNO055_IRQ_ACC_MASK_SNM_THRESHOLD,
+						  (val->val1 == BNO055_ACC_AN_MOTION_ANY)
+							  ? BNO055_IRQ_ACC_SHIFT_AM
+							  : BNO055_IRQ_ACC_SHIFT_SNM,
+						  val->val2);
 			if (err < 0) {
 				return err;
 			}
@@ -546,11 +554,29 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 
 		case SENSOR_ATTR_SLOPE_DUR:
 			LOG_DBG("ACC ATTR AM DURATION");
-			err = bno055_set_attribut(dev, BNO055_REGISTER_ACC_INT_SETTINGS,
-						  BNO055_IRQ_ACC_MASK_AM_DURATION,
-						  BNO055_IRQ_ACC_SHIFT_AM, val->val1);
-			if (err < 0) {
-				return err;
+			if (val->val1 == BNO055_ACC_AN_MOTION_ANY) {
+				err = bno055_set_attribut(dev, BNO055_REGISTER_ACC_INT_SETTINGS,
+							  BNO055_IRQ_ACC_MASK_AM_DURATION,
+							  BNO055_IRQ_ACC_SHIFT_AM, val->val2);
+				if (err < 0) {
+					return err;
+				}
+			} else if (val->val1 == BNO055_ACC_AN_MOTION_NO) {
+				err = bno055_set_attribut(dev, BNO055_REGISTER_ACC_NO_MOTION_SET,
+							  BNO055_IRQ_ACC_MASK_SNM_DURATION,
+							  BNO055_IRQ_ACC_SHIFT_SNM, val->val2);
+				if (err < 0) {
+					return err;
+				}
+				err = bno055_set_attribut(dev, BNO055_REGISTER_ACC_NO_MOTION_SET,
+							  BNO055_IRQ_ACC_MASK_SNM_SET,
+							  BNO055_IRQ_ACC_NO_SHIFT,
+							  (val->val2 >> BNO055_IRQ_ACC_SNM_SHIFT));
+				if (err < 0) {
+					return err;
+				}
+			} else {
+				return -ENOTSUP;
 			}
 			break;
 
@@ -1242,7 +1268,7 @@ static int bno055_trigger_configuation(const struct device *dev, const struct se
 	bno055_set_page(dev, BNO055_PAGE_ONE);
 
 	uint8_t reg[2];
-	if ((trig->type == SENSOR_TRIG_DELTA)) {
+	if ((trig->type == SENSOR_TRIG_DELTA) || (trig->type == SENSOR_TRIG_STATIONARY)) {
 		uint8_t i2c_reg = BNO055_REGISTER_CHIP_ID;
 		uint8_t reg_mask = BNO055_REGISTER_CHIP_ID;
 		if ((trig->chan == SENSOR_CHAN_ACCEL_XYZ) || (trig->chan == SENSOR_CHAN_ACCEL_X) ||
@@ -1404,6 +1430,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 		if ((data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION] != NULL) &&
 		    (data->trigger[BNO055_IRQ_ACC_AN_MOTION] != NULL)) {
 			LOG_ERR("Any/No Motion trigger already affected!!");
+			LOG_ERR("Clear the trigger with NULL callback to setup a new trigger!!");
 			return -ENOTSUP;
 		}
 
@@ -1446,16 +1473,46 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 		return 0;
 	}
 
-	if ((trig->type == SENSOR_TRIG_STATIONARY) && (trig->chan == SENSOR_CHAN_ACCEL_XYZ)) {
+	if ((trig->type == SENSOR_TRIG_STATIONARY) && BNO055_IS_ACCEL_CHANNEL(trig->chan)) {
 		if ((data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION] != NULL) &&
 		    (data->trigger[BNO055_IRQ_ACC_AN_MOTION] != NULL)) {
 			LOG_ERR("Any/No Motion trigger already affected!!");
+			LOG_ERR("Clear the trigger with NULL callback to setup a new trigger!!");
 			return -ENOTSUP;
 		}
-		err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_NM,
-						  BNO055_IRQ_MASK_ACC_NM, handler != NULL);
-		if (err < 0) {
-			return err;
+
+		if ((trig->chan == SENSOR_CHAN_ACCEL_XYZ)) {
+			LOG_DBG("TRIGGER SET ACC_XYZ DELTA");
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_NM,
+							  BNO055_IRQ_ACC_MASK_AN_MOTION_AXIS,
+							  handler != NULL);
+			if (err < 0) {
+				return err;
+			}
+		} else if ((trig->chan == SENSOR_CHAN_ACCEL_X)) {
+			LOG_DBG("TRIGGER SET ACC_X DELTA");
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_NM,
+							  BNO055_IRQ_ACC_SETTINGS_AN_MOTION_X,
+							  handler != NULL);
+			if (err < 0) {
+				return err;
+			}
+		} else if ((trig->chan == SENSOR_CHAN_ACCEL_Y)) {
+			LOG_DBG("TRIGGER SET ACC_Y DELTA");
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_NM,
+							  BNO055_IRQ_ACC_SETTINGS_AN_MOTION_Y,
+							  handler != NULL);
+			if (err < 0) {
+				return err;
+			}
+		} else if ((trig->chan == SENSOR_CHAN_ACCEL_Z)) {
+			LOG_DBG("TRIGGER SET ACC_Z DELTA");
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_NM,
+							  BNO055_IRQ_ACC_SETTINGS_AN_MOTION_Z,
+							  handler != NULL);
+			if (err < 0) {
+				return err;
+			}
 		}
 
 		data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION] = handler;
