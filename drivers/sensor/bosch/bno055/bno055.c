@@ -1410,6 +1410,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 	LOG_INF("SET TRIGGER [%d][%d]", trig->type, trig->chan);
 
 	if ((trig->type == SENSOR_TRIG_DATA_READY) && (trig->chan == SENSOR_CHAN_ACCEL_XYZ)) {
+		LOG_DBG("TRIGGER SET ACC DATA READY");
 		err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_BSX_DRDY,
 						  BNO055_IRQ_MASK_ACC_BSX_DRDY, handler != NULL);
 		if (err < 0) {
@@ -1422,6 +1423,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 	}
 
 	if ((trig->type == SENSOR_TRIG_DATA_READY) && (trig->chan == SENSOR_CHAN_MAGN_XYZ)) {
+		LOG_DBG("TRIGGER SET MAG DATA READY");
 		err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_MAG_DRDY,
 						  BNO055_IRQ_MASK_MAG_DRDY, handler != NULL);
 		if (err < 0) {
@@ -1434,6 +1436,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 	}
 
 	if ((trig->type == SENSOR_TRIG_DATA_READY) && (trig->chan == SENSOR_CHAN_GYRO_XYZ)) {
+		LOG_DBG("TRIGGER SET GYR DATA READY");
 		err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_DRDY,
 						  BNO055_IRQ_MASK_GYR_DRDY, handler != NULL);
 		if (err < 0) {
@@ -1447,6 +1450,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 
 	if ((trig->type == SENSOR_TRIG_DELTA) && BNO055_IS_GYRO_CHANNEL(trig->chan)) {
 		if (trig->chan == SENSOR_CHAN_GYRO_XYZ) {
+			LOG_DBG("TRIGGER SET GYR_XYZ DELTA");
 			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_AM,
 							  BNO055_IRQ_GYR_MASK_AN_MOTION_AXIS,
 							  handler != NULL);
@@ -1454,6 +1458,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 				return err;
 			}
 		} else if (trig->chan == SENSOR_CHAN_GYRO_X) {
+			LOG_DBG("TRIGGER SET GYR_X DELTA");
 			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_AM,
 							  BNO055_IRQ_GYR_SETTINGS_AN_MOTION_X,
 							  handler != NULL);
@@ -1461,6 +1466,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 				return err;
 			}
 		} else if (trig->chan == SENSOR_CHAN_GYRO_Y) {
+			LOG_DBG("TRIGGER SET GYR_Y DELTA");
 			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_AM,
 							  BNO055_IRQ_GYR_SETTINGS_AN_MOTION_Y,
 							  handler != NULL);
@@ -1468,6 +1474,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 				return err;
 			}
 		} else if (trig->chan == SENSOR_CHAN_GYRO_Z) {
+			LOG_DBG("TRIGGER SET GYR_Z DELTA");
 			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_AM,
 							  BNO055_IRQ_GYR_SETTINGS_AN_MOTION_Z,
 							  handler != NULL);
@@ -1576,11 +1583,39 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 	}
 
 	if ((trig->type == (enum sensor_trigger_type)BNO055_SENSOR_TRIG_HIGH_G) &&
-	    (trig->chan == SENSOR_CHAN_ACCEL_XYZ)) {
-		err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_HIGH_G,
-						  BNO055_IRQ_ACC_MASK_HG_AXIS, handler != NULL);
-		if (err < 0) {
-			return err;
+	    BNO055_IS_ACCEL_CHANNEL(trig->chan)) {
+		if ((trig->chan == SENSOR_CHAN_ACCEL_XYZ)) {
+			LOG_DBG("TRIGGER SET ACC_XYZ High G");
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_HIGH_G,
+							  BNO055_IRQ_ACC_MASK_HG_AXIS,
+							  handler != NULL);
+			if (err < 0) {
+				return err;
+			}
+		} else if ((trig->chan == SENSOR_CHAN_ACCEL_X)) {
+			LOG_DBG("TRIGGER SET ACC_X High G");
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_HIGH_G,
+							  BNO055_IRQ_ACC_SETTINGS_HG_X,
+							  handler != NULL);
+			if (err < 0) {
+				return err;
+			}
+		} else if ((trig->chan == SENSOR_CHAN_ACCEL_Y)) {
+			LOG_DBG("TRIGGER SET ACC_Y High G");
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_HIGH_G,
+							  BNO055_IRQ_ACC_SETTINGS_HG_Y,
+							  handler != NULL);
+			if (err < 0) {
+				return err;
+			}
+		} else if ((trig->chan == SENSOR_CHAN_ACCEL_Z)) {
+			LOG_DBG("TRIGGER SET ACC_Z High G");
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_HIGH_G,
+							  BNO055_IRQ_ACC_SETTINGS_HG_Z,
+							  handler != NULL);
+			if (err < 0) {
+				return err;
+			}
 		}
 
 		data->trigger_handler[BNO055_IRQ_ACC_HIGH_G] = handler;

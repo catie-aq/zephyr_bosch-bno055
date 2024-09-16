@@ -704,7 +704,7 @@ enum acc_slow_no_motion {
 #define BNO055_IRQ_GYR_SETTINGS_AN_MOTION_Z (0x01 << 2)
 #define BNO055_IRQ_GYR_SETTINGS_HR_X        (0x01 << 3)
 #define BNO055_IRQ_GYR_SETTINGS_HR_Y        (0x01 << 4)
-#define BNO055_IRQ_GYR_SETTINGS_HR_2        (0x01 << 5)
+#define BNO055_IRQ_GYR_SETTINGS_HR_Z        (0x01 << 5)
 #define BNO055_IRQ_GYR_SETTINGS_AM_FILT     (0x01 << BNO055_IRQ_GYR_SHIFT_AM_FILT)
 #define BNO055_IRQ_GYR_SETTINGS_HR_FILT     (0x01 << 7)
 
