@@ -19,7 +19,7 @@ Implemented feature:
 * [X] Gravity Fusion channels getter
 * [X] Calibration Status getter
 * [ ] Axis remapping configuration (DeviceTree)
-* [ ] Interrupt configuration (attr + DeviceTree)
+* [X] Interrupt configuration (attr + DeviceTree)
 * [ ] Interrupt configuration DRDY (attr + DeviceTree)
 * [ ] Offset configuration (sensor_attr)
 * [ ] SIC Matrix support
