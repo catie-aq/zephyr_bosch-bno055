@@ -647,12 +647,6 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 			if (err < 0) {
 				return err;
 			}
-			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_INT_SETTINGS,
-						  BNO055_IRQ_GYR_SETTINGS_AM_FILT,
-						  BNO055_IRQ_GYR_SHIFT_AM_FILT, val->val2);
-			if (err < 0) {
-				return err;
-			}
 			break;
 
 		case SENSOR_ATTR_SLOPE_DUR:
@@ -672,6 +666,21 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 			}
 			break;
 
+		case SENSOR_ATTR_FEATURE_MASK:
+			LOG_DBG("GYRO ATTR FEATURE");
+			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_INT_SETTINGS,
+						  BNO055_IRQ_GYR_SETTINGS_HR_FILT,
+						  BNO055_IRQ_GYR_SHIFT_HR_FILT, val->val1);
+			if (err < 0) {
+				return err;
+			}
+			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_INT_SETTINGS,
+						  BNO055_IRQ_GYR_SETTINGS_AM_FILT,
+						  BNO055_IRQ_GYR_SHIFT_AM_FILT, val->val2);
+			if (err < 0) {
+				return err;
+			}
+			break;
 		default:
 			return -ENOTSUP;
 		}

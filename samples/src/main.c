@@ -85,7 +85,7 @@ int main(void)
 		config.val2 = BNO055_IRQ_ACC_SN_MOTION_NO || BNO055_ACC_SN_DURATION_1_SECONDS;
 		sensor_attr_set(bno_dev, SENSOR_CHAN_ACCEL_XYZ, SENSOR_ATTR_SLOPE_DUR, &config);
 		config.val1 = BNO055_ACC_THRESHOLD_NM;
-		config.val2 = 0x04;
+		config.val2 = 0x04; // Value
 		sensor_attr_set(bno_dev, SENSOR_CHAN_ACCEL_XYZ, SENSOR_ATTR_SLOPE_TH, &config);
 		trig_acc_asn.type = SENSOR_TRIG_STATIONARY;
 		trig_acc_asn.chan = SENSOR_CHAN_ACCEL_XYZ;
@@ -93,7 +93,7 @@ int main(void)
 	}
 
 	config.val1 = BNO055_ACC_DURATION_HG;
-	config.val2 = 0x7F; // Value (49 + 1) * 2 = 512 ms
+	config.val2 = 0x7F; // Value (127 + 1) * 2 = 256 ms
 	sensor_attr_set(bno_dev, SENSOR_CHAN_ACCEL_XYZ, SENSOR_ATTR_SLOPE_DUR, &config);
 	config.val1 = BNO055_ACC_THRESHOLD_HG;
 	config.val2 = 0x48; // Value
@@ -106,20 +106,20 @@ int main(void)
 	config.val2 = BNO055_GYR_AM_AWAKE_DURATION_8_SAMPLES;
 	sensor_attr_set(bno_dev, SENSOR_CHAN_GYRO_XYZ, SENSOR_ATTR_SLOPE_DUR, &config);
 	config.val1 = 0x08; // Value
-	config.val2 = 0x01; // Active Filter
+	config.val2 = 0;
 	sensor_attr_set(bno_dev, SENSOR_CHAN_GYRO_XYZ, SENSOR_ATTR_SLOPE_TH, &config);
 	trig_gyr_am.type = SENSOR_TRIG_DELTA;
 	trig_gyr_am.chan = SENSOR_CHAN_GYRO_XYZ;
 	sensor_trigger_set(bno_dev, &trig_gyr_am, gyr_am);
 
 	config.val1 = 0x0A; // Value
-	config.val2 = 0x00;
+	config.val2 = 0;
 	sensor_attr_set(bno_dev, SENSOR_CHAN_GYRO_X, SENSOR_ATTR_SLOPE_DUR, &config);
 	config.val1 = 0x0A; // Value
-	config.val2 = 0x00;
+	config.val2 = 0;
 	sensor_attr_set(bno_dev, SENSOR_CHAN_GYRO_Y, SENSOR_ATTR_SLOPE_DUR, &config);
 	config.val1 = 0x0A; // Value
-	config.val2 = 0x00;
+	config.val2 = 0;
 	sensor_attr_set(bno_dev, SENSOR_CHAN_GYRO_Z, SENSOR_ATTR_SLOPE_DUR, &config);
 	config.val1 = 0x01; // Threshold
 	config.val2 = 0x00; // Hysteresis
@@ -134,8 +134,12 @@ int main(void)
 	trig_gyr_hr.chan = SENSOR_CHAN_GYRO_XYZ;
 	sensor_trigger_set(bno_dev, &trig_gyr_hr, gyr_hr);
 
+	config.val1 = BNO055_GYR_FILTER_OFF; // Deactive HR Filter
+	config.val2 = BNO055_GYR_FILTER_OFF; // Deactive AM Filter
+	sensor_attr_set(bno_dev, SENSOR_CHAN_GYRO_XYZ, SENSOR_ATTR_FEATURE_MASK, &config);
+
 	while (1) {
-		sensor_sample_fetch(bno_dev);
+		// sensor_sample_fetch(bno_dev);
 
 		// Example for Linear Acceleration and Gravity
 		sensor_channel_get(bno_dev, SENSOR_CHAN_ACCEL_XYZ, acc);
