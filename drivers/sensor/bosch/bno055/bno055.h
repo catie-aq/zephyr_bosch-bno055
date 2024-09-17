@@ -689,6 +689,7 @@ enum acc_sn_motion_duration {
 
 /* GYR Settings FLAGS */
 #define BNO055_IRQ_GYR_NO_SHIFT                0
+#define BNO055_IRQ_GYR_SHIFT_HR_FILT           7
 #define BNO055_IRQ_GYR_SHIFT_AM_FILT           6
 #define BNO055_IRQ_GYR_SHIFT_AM_THRESHOLD      0
 #define BNO055_IRQ_GYR_SHIFT_AM_AWAKE_DURATION 2
@@ -702,7 +703,7 @@ enum acc_sn_motion_duration {
 #define BNO055_IRQ_GYR_SETTINGS_HR_Y        (0x01 << 4)
 #define BNO055_IRQ_GYR_SETTINGS_HR_Z        (0x01 << 5)
 #define BNO055_IRQ_GYR_SETTINGS_AM_FILT     (0x01 << BNO055_IRQ_GYR_SHIFT_AM_FILT)
-#define BNO055_IRQ_GYR_SETTINGS_HR_FILT     (0x01 << 7)
+#define BNO055_IRQ_GYR_SETTINGS_HR_FILT     (0x01 << BNO055_IRQ_GYR_SHIFT_HR_FILT)
 
 #define BNO055_IRQ_GYR_MASK_AM_THRESHOLD      0x7F
 #define BNO055_IRQ_GYR_MASK_AM_AWAKE_DURATION 0x7F
@@ -710,6 +711,11 @@ enum acc_sn_motion_duration {
 #define BNO055_IRQ_GYR_MASK_AN_MOTION_AXIS                                                         \
 	(BNO055_IRQ_GYR_SETTINGS_AN_MOTION_X | BNO055_IRQ_GYR_SETTINGS_AN_MOTION_Y |               \
 	 BNO055_IRQ_GYR_SETTINGS_AN_MOTION_Z)
+
+enum gyr_filter {
+	BNO055_GYR_FILTER_ON = 0x00,
+	BNO055_GYR_FILTER_OFF = 0x01,
+};
 
 enum gyr_am_awake {
 	BNO055_GYR_AM_AWAKE_DURATION_8_SAMPLES = 0x00,
