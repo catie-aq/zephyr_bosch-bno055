@@ -1548,7 +1548,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 		}
 
 		data->trigger_handler[BNO055_IRQ_ACC_BSX_DRDY] = handler;
-		data->trigger[BNO055_IRQ_ACC_BSX_DRDY] = trig;
+		data->trigger[BNO055_IRQ_ACC_BSX_DRDY] = (handler != NULL) ? trig : NULL;
 		return 0;
 	}
 
@@ -1561,7 +1561,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 		}
 
 		data->trigger_handler[BNO055_IRQ_MAG_DRDY] = handler;
-		data->trigger[BNO055_IRQ_MAG_DRDY] = trig;
+		data->trigger[BNO055_IRQ_MAG_DRDY] = (handler != NULL) ? trig : NULL;
 		return 0;
 	}
 
@@ -1574,7 +1574,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 		}
 
 		data->trigger_handler[BNO055_IRQ_GYR_DRDY] = handler;
-		data->trigger[BNO055_IRQ_GYR_DRDY] = trig;
+		data->trigger[BNO055_IRQ_GYR_DRDY] = (handler != NULL) ? trig : NULL;
 		return 0;
 	}
 
@@ -1614,13 +1614,14 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 		}
 
 		data->trigger_handler[BNO055_IRQ_GYR_AM] = handler;
-		data->trigger[BNO055_IRQ_GYR_AM] = trig;
+		data->trigger[BNO055_IRQ_GYR_AM] = (handler != NULL) ? trig : NULL;
 		return 0;
 	}
 
 	if ((trig->type == SENSOR_TRIG_DELTA) && BNO055_IS_ACCEL_CHANNEL(trig->chan)) {
+		LOG_DBG("TRIGGER SET ACC DELTA");
 		if ((data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION] != NULL) &&
-		    (data->trigger[BNO055_IRQ_ACC_AN_MOTION] != NULL)) {
+		    (data->trigger[BNO055_IRQ_ACC_AN_MOTION] != NULL) && (handler != NULL)) {
 			LOG_ERR("Any/No Motion trigger already affected!!");
 			LOG_ERR("Clear the trigger with NULL callback to setup a new trigger!!");
 			return -ENOTSUP;
@@ -1661,20 +1662,21 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 		}
 
 		data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION] = handler;
-		data->trigger[BNO055_IRQ_ACC_AN_MOTION] = trig;
+		data->trigger[BNO055_IRQ_ACC_AN_MOTION] = (handler != NULL) ? trig : NULL;
 		return 0;
 	}
 
 	if ((trig->type == SENSOR_TRIG_STATIONARY) && BNO055_IS_ACCEL_CHANNEL(trig->chan)) {
+		LOG_DBG("TRIGGER SET ACC NO MOTION");
 		if ((data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION] != NULL) &&
-		    (data->trigger[BNO055_IRQ_ACC_AN_MOTION] != NULL)) {
+		    (data->trigger[BNO055_IRQ_ACC_AN_MOTION] != NULL) && (handler != NULL)) {
 			LOG_ERR("Any/No Motion trigger already affected!!");
 			LOG_ERR("Clear the trigger with NULL callback to setup a new trigger!!");
 			return -ENOTSUP;
 		}
 
 		if ((trig->chan == SENSOR_CHAN_ACCEL_XYZ)) {
-			LOG_DBG("TRIGGER SET ACC_XYZ DELTA");
+			LOG_DBG("TRIGGER SET ACC_XYZ NO MOTION");
 			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_NM,
 							  BNO055_IRQ_ACC_MASK_AN_MOTION_AXIS,
 							  handler != NULL);
@@ -1682,7 +1684,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 				return err;
 			}
 		} else if ((trig->chan == SENSOR_CHAN_ACCEL_X)) {
-			LOG_DBG("TRIGGER SET ACC_X DELTA");
+			LOG_DBG("TRIGGER SET ACC_X NO MOTION");
 			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_NM,
 							  BNO055_IRQ_ACC_SETTINGS_AN_MOTION_X,
 							  handler != NULL);
@@ -1690,7 +1692,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 				return err;
 			}
 		} else if ((trig->chan == SENSOR_CHAN_ACCEL_Y)) {
-			LOG_DBG("TRIGGER SET ACC_Y DELTA");
+			LOG_DBG("TRIGGER SET ACC_Y NO MOTION");
 			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_NM,
 							  BNO055_IRQ_ACC_SETTINGS_AN_MOTION_Y,
 							  handler != NULL);
@@ -1698,7 +1700,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 				return err;
 			}
 		} else if ((trig->chan == SENSOR_CHAN_ACCEL_Z)) {
-			LOG_DBG("TRIGGER SET ACC_Z DELTA");
+			LOG_DBG("TRIGGER SET ACC_Z NO MOTION");
 			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_NM,
 							  BNO055_IRQ_ACC_SETTINGS_AN_MOTION_Z,
 							  handler != NULL);
@@ -1708,7 +1710,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 		}
 
 		data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION] = handler;
-		data->trigger[BNO055_IRQ_ACC_AN_MOTION] = trig;
+		data->trigger[BNO055_IRQ_ACC_AN_MOTION] = (handler != NULL) ? trig : NULL;
 		return 0;
 	}
 
@@ -1749,7 +1751,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 		}
 
 		data->trigger_handler[BNO055_IRQ_ACC_HIGH_G] = handler;
-		data->trigger[BNO055_IRQ_ACC_HIGH_G] = trig;
+		data->trigger[BNO055_IRQ_ACC_HIGH_G] = (handler != NULL) ? trig : NULL;
 		return 0;
 	}
 
@@ -1796,7 +1798,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 		}
 
 		data->trigger_handler[BNO055_IRQ_GYR_HIGH_RATE] = handler;
-		data->trigger[BNO055_IRQ_GYR_HIGH_RATE] = trig;
+		data->trigger[BNO055_IRQ_GYR_HIGH_RATE] = (handler != NULL) ? trig : NULL;
 		return 0;
 	}
 
