@@ -65,7 +65,7 @@ static int bno055_set_page(const struct device *dev, enum PageId page)
 	}
 
 	if (data->current_page != (reg & BNO055_PAGE_ID_MASK)) {
-		LOG_WRN("[W] I2C page register issue [%d]|[%d]!!", data->current_page,
+		LOG_WRN("Update page index from I2C page register [%d]<-[%d]!!", data->current_page,
 			reg & BNO055_PAGE_ID_MASK);
 		data->current_page = reg & BNO055_PAGE_ID_MASK;
 	}
@@ -75,22 +75,22 @@ static int bno055_set_page(const struct device *dev, enum PageId page)
 		return 0;
 	}
 
-	// Write PAGE
+	/* Write PAGE */
 	err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, page);
 	if (err < 0) {
 		return err;
 	}
 
-	// Read PAGE
+	/* Read PAGE */
 	err = i2c_reg_read_byte_dt(&config->i2c_bus, BNO055_REGISTER_PAGE_ID, &reg);
 	if (err < 0) {
 		return err;
 	}
 
 	if ((reg & BNO055_PAGE_ID_MASK) != page) {
-		LOG_ERR("[E] I2C communication compromised [%d]|[%d]!!", reg & BNO055_PAGE_ID_MASK,
-			page);
-		return -1;
+		LOG_ERR("I2C communication compromised [%d]!=[%d]!!", page,
+			reg & BNO055_PAGE_ID_MASK);
+		return -ECANCELED;
 	}
 
 	data->current_page = reg & BNO055_PAGE_ID_MASK;
@@ -119,7 +119,7 @@ static int bno055_set_config(const struct device *dev, enum OperatingMode mode, 
 	}
 
 	if (data->mode != (reg & BNO055_OPERATION_MODE_MASK)) {
-		LOG_WRN("[WC_1] I2C mode register issue [%d]|[%d]!!", data->mode,
+		LOG_WRN("Update mode from I2C mode register [%d]<-[%d]!!", data->mode,
 			reg & BNO055_OPERATION_MODE_MASK);
 		data->mode = reg & BNO055_OPERATION_MODE_MASK;
 	}
@@ -140,9 +140,9 @@ static int bno055_set_config(const struct device *dev, enum OperatingMode mode, 
 	}
 
 	if ((reg & BNO055_OPERATION_MODE_MASK) != BNO055_MODE_CONFIG) {
-		LOG_ERR("[EC_1] I2C communication compromised [%d]|[%d]!!",
-			reg & BNO055_OPERATION_MODE_MASK, BNO055_MODE_CONFIG);
-		return -1;
+		LOG_ERR("I2C communication compromised [%d]!=[%d]!!", BNO055_MODE_CONFIG,
+			reg & BNO055_OPERATION_MODE_MASK);
+		return -ECANCELED;
 	}
 	data->mode = reg & BNO055_OPERATION_MODE_MASK;
 
@@ -195,7 +195,7 @@ static int bno055_set_config(const struct device *dev, enum OperatingMode mode, 
 	}
 	k_sleep(K_MSEC(
 		33 *
-		BNO055_TIMING_SWITCH_FROM_CONFIG)); // /!\ not datasheet confrom WRONG DATASHEET
+		BNO055_TIMING_SWITCH_FROM_CONFIG)); /* /!\ Datasheet not confrom WRONG DATASHEET */
 
 	err = i2c_reg_read_byte_dt(&config->i2c_bus, BNO055_REGISTER_OPERATION_MODE, &reg);
 	if (err < 0) {
@@ -203,9 +203,9 @@ static int bno055_set_config(const struct device *dev, enum OperatingMode mode, 
 	}
 
 	if ((reg & BNO055_PAGE_ID_MASK) != mode) {
-		LOG_ERR("[EC_2] I2C communication compromised [%d]|[%d]!!",
-			reg & BNO055_OPERATION_MODE_MASK, mode);
-		return -1;
+		LOG_ERR("I2C communication compromised [%d]!=[%d]!!", mode,
+			reg & BNO055_OPERATION_MODE_MASK);
+		return -ECANCELED;
 	}
 
 	data->mode = reg & BNO055_OPERATION_MODE_MASK;
@@ -234,7 +234,7 @@ static int bno055_set_power(const struct device *dev, enum PowerMode power)
 	}
 
 	if (data->power != (reg & BNO055_POWER_MODE_MASK)) {
-		LOG_WRN("[WP_1] I2C mode register issue [%d]|[%d]!!", data->power,
+		LOG_WRN("Update power mode from I2C power register [%d]<-[%d]!!", data->power,
 			reg & BNO055_POWER_MODE_MASK);
 		data->power = reg & BNO055_POWER_MODE_MASK;
 	}
@@ -253,9 +253,9 @@ static int bno055_set_power(const struct device *dev, enum PowerMode power)
 		}
 
 		if ((reg & BNO055_POWER_MODE_MASK) != mode) {
-			LOG_ERR("[EP_1] I2C communication compromised [%d]|[%d]!!",
-				reg & BNO055_POWER_MODE_MASK, mode);
-			return -1;
+			LOG_ERR("I2C communication compromised [%d]!=[%d]!!", mode,
+				reg & BNO055_POWER_MODE_MASK);
+			return -ECANCELED;
 		}
 		data->power = reg & BNO055_POWER_MODE_MASK;
 	}
@@ -286,7 +286,10 @@ static int bno055_set_attribut(const struct device *dev, uint8_t reg, uint8_t ma
 	}
 
 	/* Switch to Page 1 */
-	bno055_set_page(dev, BNO055_PAGE_ONE);
+	err = bno055_set_page(dev, BNO055_PAGE_ONE);
+	if (err < 0) {
+		return err;
+	}
 
 	err = i2c_reg_read_byte_dt(&config->i2c_bus, reg, &res);
 	if (err < 0) {
@@ -306,9 +309,8 @@ static int bno055_set_attribut(const struct device *dev, uint8_t reg, uint8_t ma
 	}
 
 	if ((res & mask) != (val << shift)) {
-		LOG_ERR("[EP_1] I2C communication compromised [%d]|[%d]!!", res & mask,
-			val << shift);
-		return -1;
+		LOG_ERR("I2C communication compromised [%d]!=[%d]!!", val << shift, res & mask);
+		return -ECANCELED;
 	}
 
 	err = bno055_set_config(dev, mode, mode < BNO055_MODE_IMU ? false : true);
