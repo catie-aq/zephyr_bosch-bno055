@@ -8,7 +8,7 @@
 #include <zephyr/drivers/sensor.h>
 #include <bno055.h> // Required for custom SENSOR_CHAN_*
 
-static const struct device *const bno_dev = DEVICE_DT_GET(DT_NODELABEL(bno0550));
+static const struct device *const bno055_dev = DEVICE_DT_GET(DT_NODELABEL(bno0550));
 static struct sensor_trigger trig_acc_drdy;
 static struct sensor_trigger trig_acc_asn;
 static struct sensor_trigger trig_acc_hg;
