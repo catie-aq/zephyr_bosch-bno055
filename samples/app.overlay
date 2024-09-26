@@ -9,7 +9,6 @@
 &sixtron_i2c {
 	status = "okay";
 
-	// /!\ TO DO: Multiple i2c adress possible 28/29
 	bno0550: bno055@28 {
 		compatible = "bosch,bno055";
 		reg = <0x28>;

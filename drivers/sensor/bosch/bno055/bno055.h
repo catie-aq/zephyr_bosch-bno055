@@ -44,19 +44,19 @@ enum bno055_sensor_attribute {
 /* Registers (PAGE 0) */
 #define BNO055_REGISTER_PAGE_ID 0x07
 
-// Identification Registers
+/* Identification Registers */
 #define BNO055_REGISTER_CHIP_ID 0x00
 #define BNO055_REGISTER_ACC_ID  0x01
 #define BNO055_REGISTER_MAG_ID  0x02
 #define BNO055_REGISTER_GYR_ID  0x03
 
-// Revision Registers
+/* Revision Registers */
 #define BNO055_REGISTER_SOFTWARE_REV     BNO055_REGISTER_SOFTWARE_REV_LSB // 2 Octets
 #define BNO055_REGISTER_SOFTWARE_REV_LSB 0x04
 #define BNO055_REGISTER_SOFTWARE_REV_MSB 0x05
 #define BNO055_REGISTER_BOOTLOADER_REV   0x06
 
-// Accelerometer Registers
+/* Accelerometer Registers */
 #define BNO055_REGISTER_ACC_DATA_X_LSB 0x08
 #define BNO055_REGISTER_ACC_DATA_X_MSB 0x09
 #define BNO055_REGISTER_ACC_DATA_Y_LSB 0x0A
@@ -68,7 +68,7 @@ enum bno055_sensor_attribute {
 #define BNO055_REGISTER_ACC_DATA_Z     BNO055_REGISTER_ACC_DATA_Z_LSB
 #define BNO055_REGISTER_ACC_DATA       BNO055_REGISTER_ACC_DATA_X
 
-// Magnetometer Registers
+/* Magnetometer Registers */
 #define BNO055_REGISTER_MAG_DATA_X_LSB 0x0E
 #define BNO055_REGISTER_MAG_DATA_X_MSB 0x0F
 #define BNO055_REGISTER_MAG_DATA_Y_LSB 0x10
@@ -80,7 +80,7 @@ enum bno055_sensor_attribute {
 #define BNO055_REGISTER_MAG_DATA_Z     BNO055_REGISTER_MAG_DATA_Z_LSB
 #define BNO055_REGISTER_MAG_DATA       BNO055_REGISTER_MAG_DATA_X
 
-// Gyroscope Registers
+/* Gyroscope Registers */
 #define BNO055_REGISTER_GYR_DATA_X_LSB 0x14
 #define BNO055_REGISTER_GYR_DATA_X_MSB 0x15
 #define BNO055_REGISTER_GYR_DATA_Y_LSB 0x16
@@ -92,7 +92,7 @@ enum bno055_sensor_attribute {
 #define BNO055_REGISTER_GYR_DATA_Z     BNO055_REGISTER_GYR_DATA_Z_LSB
 #define BNO055_REGISTER_GYR_DATA       BNO055_REGISTER_GYR_DATA_X
 
-// Euler Registers
+/* Euler Registers */
 #define BNO055_REGISTER_EUL_DATA_HEADING_LSB 0x1A
 #define BNO055_REGISTER_EUL_DATA_HEADING_MSB 0x1B
 #define BNO055_REGISTER_EUL_DATA_ROLL_LSB    0x1C
@@ -104,7 +104,7 @@ enum bno055_sensor_attribute {
 #define BNO055_REGISTER_EUL_DATA_PITCH       BNO055_REGISTER_EUL_DATA_PITCH_LSB
 #define BNO055_REGISTER_EUL_DATA             BNO055_REGISTER_EUL_DATA_PITCH
 
-// Quaternion Registers
+/* Quaternion Registers */
 #define BNO055_REGISTER_QUA_DATA_W_LSB 0x20
 #define BNO055_REGISTER_QUA_DATA_W_MSB 0x21
 #define BNO055_REGISTER_QUA_DATA_X_LSB 0x22
@@ -119,7 +119,7 @@ enum bno055_sensor_attribute {
 #define BNO055_REGISTER_QUA_DATA_Z     BNO055_REGISTER_QUA_DATA_Z_LSB
 #define BNO055_REGISTER_QUA_DATA       BNO055_REGISTER_QUA_DATA_W
 
-// Linear Acceleration Registers
+/* Linear Acceleration Registers */
 #define BNO055_REGISTER_LIA_DATA_X_LSB 0x28
 #define BNO055_REGISTER_LIA_DATA_X_MSB 0x29
 #define BNO055_REGISTER_LIA_DATA_Y_LSB 0x2A
@@ -131,7 +131,7 @@ enum bno055_sensor_attribute {
 #define BNO055_REGISTER_LIA_DATA_Z     BNO055_REGISTER_LIA_DATA_Z_LSB
 #define BNO055_REGISTER_LIA_DATA       BNO055_REGISTER_LIA_DATA_X
 
-// Gravity Vector Registers
+/* Gravity Vector Registers */
 #define BNO055_REGISTER_GRV_DATA_X_LSB 0x2E
 #define BNO055_REGISTER_GRV_DATA_X_MSB 0x2F
 #define BNO055_REGISTER_GRV_DATA_Y_LSB 0x30
@@ -143,9 +143,9 @@ enum bno055_sensor_attribute {
 #define BNO055_REGISTER_GRV_DATA_Z     BNO055_REGISTER_GRV_DATA_Z_LSB
 #define BNO055_REGISTER_GRV_DATA       BNO055_REGISTER_GRV_DATA_X
 
-// Others
+/* Others */
 #define BNO055_REGISTER_TEMP               0x34
-#define BNO055_REGISTER_CALIBRATION_STATUS 0x35 // [SYS(2)|GYR(2)|ACC(2)|MAG(2)]
+#define BNO055_REGISTER_CALIBRATION_STATUS 0x35 /* [SYS(2)|GYR(2)|ACC(2)|MAG(2)] */
 #define BNO055_REGISTER_SELF_TEST_RESULT   0x36
 #define BNO055_REGISTER_IRQ_STATUS         0x37
 #define BNO055_REGISTER_SYS_CLK_STATUS     0x38
@@ -160,7 +160,7 @@ enum bno055_sensor_attribute {
 #define BNO055_REGISTER_AXIS_MAP_CONF  0x41
 #define BNO055_REGISTER_AXIS_MAP_SIGN  0x42
 
-// SIC Matrix Registers
+/* SIC Matrix Registers */
 #define BNO055_REGISTER_SIC_MATRIC_LSB0 0x43
 #define BNO055_REGISTER_SIC_MATRIC_MSB0 0x44
 #define BNO055_REGISTER_SIC_MATRIC_LSB1 0x45
@@ -180,7 +180,7 @@ enum bno055_sensor_attribute {
 #define BNO055_REGISTER_SIC_MATRIC_LSB8 0x53
 #define BNO055_REGISTER_SIC_MATRIC_MSB8 0x54
 
-// Accelerometer Offset Registers
+/* Accelerometer Offset Registers */
 #define BNO055_REGISTER_ACC_OFFSET_X_LSB 0x55
 #define BNO055_REGISTER_ACC_OFFSET_X_MSB 0x56
 #define BNO055_REGISTER_ACC_OFFSET_Y_LSB 0x57
@@ -188,7 +188,7 @@ enum bno055_sensor_attribute {
 #define BNO055_REGISTER_ACC_OFFSET_Z_LSB 0x59
 #define BNO055_REGISTER_ACC_OFFSET_Z_MSB 0x5A
 
-// Magnetometer Offset Registers
+/* Magnetometer Offset Registers */
 #define BNO055_REGISTER_MAG_OFFSET_X_LSB 0x5B
 #define BNO055_REGISTER_MAG_OFFSET_X_MSB 0x5C
 #define BNO055_REGISTER_MAG_OFFSET_Y_LSB 0x5D
@@ -196,7 +196,7 @@ enum bno055_sensor_attribute {
 #define BNO055_REGISTER_MAG_OFFSET_Z_LSB 0x5F
 #define BNO055_REGISTER_MAG_OFFSET_Z_MSB 0x60
 
-// Gyroscope Offset Registers
+/* Gyroscope Offset Registers */
 #define BNO055_REGISTER_GYR_OFFSET_X_LSB 0x61
 #define BNO055_REGISTER_GYR_OFFSET_X_MSB 0x62
 #define BNO055_REGISTER_GYR_OFFSET_Y_LSB 0x63
