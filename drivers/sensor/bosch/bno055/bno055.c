@@ -26,19 +26,19 @@ struct bno055_config {
 
 struct bno055_data {
 	uint8_t current_page;
-	enum OperatingMode mode;
-	enum PowerMode power;
+	enum bno055_OperatingMode mode;
+	enum bno055_PowerMode power;
 
-	struct vector3_data acc;
-	struct vector3_data mag;
-	struct vector3_data gyr;
+	struct bno055_vector3_data acc;
+	struct bno055_vector3_data mag;
+	struct bno055_vector3_data gyr;
 
-	struct vector3_data eul;
-	struct vector4_data qua;
-	struct vector3_data lia;
-	struct vector3_data grv;
+	struct bno055_vector3_data eul;
+	struct bno055_vector4_data qua;
+	struct bno055_vector3_data lia;
+	struct bno055_vector3_data grv;
 
-	struct calib_data calib;
+	struct bno055_calib_data calib;
 
 #if BNO055_USE_IRQ
 	const struct device *dev;
@@ -51,7 +51,7 @@ struct bno055_data {
 #endif
 };
 
-static int bno055_set_page(const struct device *dev, enum PageId page)
+static int bno055_set_page(const struct device *dev, enum bno055_PageId page)
 {
 	const struct bno055_config *config = dev->config;
 	struct bno055_data *data = dev->data;
@@ -98,7 +98,7 @@ static int bno055_set_page(const struct device *dev, enum PageId page)
 	return 0;
 }
 
-static int bno055_set_config(const struct device *dev, enum OperatingMode mode, bool fusion)
+static int bno055_set_config(const struct device *dev, enum bno055_OperatingMode mode, bool fusion)
 {
 	const struct bno055_config *config = dev->config;
 	struct bno055_data *data = dev->data;
@@ -213,7 +213,7 @@ static int bno055_set_config(const struct device *dev, enum OperatingMode mode, 
 	return 0;
 }
 
-static int bno055_set_power(const struct device *dev, enum PowerMode power)
+static int bno055_set_power(const struct device *dev, enum bno055_PowerMode power)
 {
 	const struct bno055_config *config = dev->config;
 	struct bno055_data *data = dev->data;
@@ -222,7 +222,7 @@ static int bno055_set_power(const struct device *dev, enum PowerMode power)
 
 	LOG_DBG("FUNC POWER[%d]", power);
 
-	enum OperatingMode mode = data->mode;
+	enum bno055_OperatingMode mode = data->mode;
 	err = bno055_set_config(dev, BNO055_MODE_CONFIG, false);
 	if (err < 0) {
 		return err;
@@ -279,7 +279,7 @@ static int bno055_set_attribut(const struct device *dev, uint8_t reg, uint8_t ma
 
 	LOG_DBG("FUNC ATTR[%d][%d]", reg, val);
 
-	enum OperatingMode mode = data->mode;
+	enum bno055_OperatingMode mode = data->mode;
 	err = bno055_set_config(dev, BNO055_MODE_CONFIG, false);
 	if (err < 0) {
 		return err;
@@ -323,7 +323,7 @@ static int bno055_set_attribut(const struct device *dev, uint8_t reg, uint8_t ma
 }
 
 static int bno055_vector3_fetch(const struct device *dev, const uint8_t data_register,
-				struct vector3_data *data)
+				struct bno055_vector3_data *data)
 {
 	const struct bno055_config *config = dev->config;
 	int8_t regs[6];
@@ -340,7 +340,7 @@ static int bno055_vector3_fetch(const struct device *dev, const uint8_t data_reg
 }
 
 static int bno055_vector4_fetch(const struct device *dev, const uint8_t data_register,
-				struct vector4_data *data)
+				struct bno055_vector4_data *data)
 {
 	const struct bno055_config *config = dev->config;
 	int8_t regs[8];
@@ -357,7 +357,7 @@ static int bno055_vector4_fetch(const struct device *dev, const uint8_t data_reg
 	return 0;
 }
 
-static int bno055_calibration_fetch(const struct device *dev, struct calib_data *data)
+static int bno055_calibration_fetch(const struct device *dev, struct bno055_calib_data *data)
 {
 	const struct bno055_config *config = dev->config;
 	int8_t regs[1];
@@ -817,7 +817,10 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 	int err;
 
 	/* Switch to Page 0 */
-	bno055_set_page(dev, BNO055_PAGE_ZERO);
+	err = bno055_set_page(dev, BNO055_PAGE_ZERO);
+	if (err < 0) {
+		return err;
+	}
 
 	switch (data->mode) {
 	case BNO055_MODE_CONFIG:
@@ -1437,14 +1440,17 @@ static int bno055_trigger_configuation(const struct device *dev, const struct se
 	int err;
 
 	LOG_DBG("FUNC TRIGGER[%d][%d]", mask, enable);
-	enum OperatingMode mode = data->mode;
+	enum bno055_OperatingMode mode = data->mode;
 	err = bno055_set_config(dev, BNO055_MODE_CONFIG, false);
 	if (err < 0) {
 		return err;
 	}
 
 	/* Switch to Page 1 */
-	bno055_set_page(dev, BNO055_PAGE_ONE);
+	err = bno055_set_page(dev, BNO055_PAGE_ONE);
+	if (err < 0) {
+		return err;
+	}
 
 	uint8_t reg[2];
 	if ((trig->type == SENSOR_TRIG_DELTA) || (trig->type == SENSOR_TRIG_STATIONARY) ||
@@ -1828,7 +1834,10 @@ static int bno055_init(const struct device *dev)
 	int err;
 
 	/* Switch to Page 0 */
-	bno055_set_page(dev, BNO055_PAGE_ZERO);
+	err = bno055_set_page(dev, BNO055_PAGE_ZERO);
+	if (err < 0) {
+		return err;
+	}
 
 	/* Send Reset Command */
 	err = i2c_reg_write_byte_dt(&config->i2c_bus, BNO055_REGISTER_SYS_TRIGGER,

@@ -475,13 +475,13 @@ enum bno055_sensor_attribute {
 
 /* BNO055 Configuration */
 #define BNO055_PAGE_ID_MASK 0xFF
-enum PageId {
+enum bno055_PageId {
 	BNO055_PAGE_ZERO = 0x00,
 	BNO055_PAGE_ONE = 0x01
 };
 
 #define BNO055_POWER_MODE_MASK 0x03
-enum PowerMode {
+enum bno055_PowerMode {
 	BNO055_POWER_NORMAL = 0x00,
 	BNO055_POWER_LOW_POWER = 0x01,
 	BNO055_POWER_SUSPEND = 0x02,
@@ -489,7 +489,7 @@ enum PowerMode {
 };
 
 #define BNO055_OPERATION_MODE_MASK 0x0F
-enum OperatingMode {
+enum bno055_OperatingMode {
 	BNO055_MODE_CONFIG = 0x00,
 	BNO055_MODE_ACC_ONLY = 0x01,
 	BNO055_MODE_MAG_ONLY = 0x02,
@@ -508,7 +508,7 @@ enum OperatingMode {
 };
 
 /* Data structures */
-struct offset_data {
+struct bno055_offset_data {
 	int16_t acc_x;
 	int16_t acc_y;
 	int16_t acc_z;
@@ -522,20 +522,20 @@ struct offset_data {
 	int16_t mag_radius;
 };
 
-struct vector3_data {
+struct bno055_vector3_data {
 	int16_t x;
 	int16_t y;
 	int16_t z;
 };
 
-struct vector4_data {
+struct bno055_vector4_data {
 	int16_t w;
 	int16_t x;
 	int16_t y;
 	int16_t z;
 };
 
-struct calib_data {
+struct bno055_calib_data {
 	int16_t sys;
 	int16_t gyr;
 	int16_t acc;
@@ -598,13 +598,13 @@ struct calib_data {
 #define BNO055_IRQ_ACC_MASK_HG_AXIS                                                                \
 	(BNO055_IRQ_ACC_SETTINGS_HG_X | BNO055_IRQ_ACC_SETTINGS_HG_Y | BNO055_IRQ_ACC_SETTINGS_HG_Z)
 
-enum acc_threshold_type {
+enum bno055_acc_threshold_type {
 	BNO055_ACC_THRESHOLD_AM = 0x00,
 	BNO055_ACC_THRESHOLD_NM = 0x01,
 	BNO055_ACC_THRESHOLD_HG = 0x02,
 };
 
-enum acc_duration_type {
+enum bno055_acc_duration_type {
 	BNO055_ACC_DURATION_AM = 0x00,
 	BNO055_ACC_DURATION_NM = 0x01,
 	BNO055_ACC_DURATION_HG = 0x02,
@@ -614,7 +614,7 @@ enum acc_duration_type {
 #define BNO055_IRQ_ACC_SN_MOTION_NO   (0x01 << BNO055_IRQ_ACC_SNM_SHIFT)
 #define BNO055_IRQ_ACC_SN_MOTION_SLOW 0x00
 
-enum acc_sn_motion_duration {
+enum bno055_acc_sn_motion_duration {
 	BNO055_ACC_SN_DURATION_1_SECONDS = 0x01,
 	BNO055_ACC_SN_DURATION_2_SECONDS = 0x02,
 	BNO055_ACC_SN_DURATION_3_SECONDS = 0x03,
@@ -712,12 +712,12 @@ enum acc_sn_motion_duration {
 	(BNO055_IRQ_GYR_SETTINGS_AN_MOTION_X | BNO055_IRQ_GYR_SETTINGS_AN_MOTION_Y |               \
 	 BNO055_IRQ_GYR_SETTINGS_AN_MOTION_Z)
 
-enum gyr_filter {
+enum bno055_gyr_filter {
 	BNO055_GYR_FILTER_ON = 0x00,
 	BNO055_GYR_FILTER_OFF = 0x01,
 };
 
-enum gyr_am_awake {
+enum bno055_gyr_am_awake {
 	BNO055_GYR_AM_AWAKE_DURATION_8_SAMPLES = 0x00,
 	BNO055_GYR_AM_AWAKE_DURATION_16_SAMPLES = 0x01,
 	BNO055_GYR_AM_AWAKE_DURATION_32_SAMPLES = 0x02,
