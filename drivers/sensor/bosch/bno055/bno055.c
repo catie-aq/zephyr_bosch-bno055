@@ -537,30 +537,30 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 		LOG_INF("SET ACC ATTR[%d][%d]", attr, val->val1);
 		switch (attr) {
 		case SENSOR_ATTR_SLOPE_TH:
-			if (val->val1 == BNO055_ACC_THRESHOLD_AM) {
+			if (val->val1 == BNO055_ACC_THRESHOLD_MOTION_ANY) {
 				LOG_DBG("ACC ATTR AM THRESHOLD");
-				err = bno055_set_attribut(dev,
-							  BNO055_REGISTER_ACC_ANY_MOTION_THRESHOLD,
-							  BNO055_IRQ_ACC_MASK_THRESHOLD,
-							  BNO055_IRQ_ACC_SHIFT_AM, val->val2);
+				err = bno055_set_attribut(
+					dev, BNO055_REGISTER_ACC_ANY_MOTION_THRESHOLD,
+					BNO055_IRQ_ACC_MASK_THRESHOLD,
+					BNO055_IRQ_ACC_SHIFT_MOTION_ANY, val->val2);
 				if (err < 0) {
 					return err;
 				}
-			} else if (val->val1 == BNO055_ACC_THRESHOLD_NM) {
+			} else if (val->val1 == BNO055_ACC_THRESHOLD_MOTION_NO) {
 				LOG_DBG("ACC ATTR NM THRESHOLD");
-				err = bno055_set_attribut(dev,
-							  BNO055_REGISTER_ACC_NO_MOTION_THRESHOLD,
-							  BNO055_IRQ_ACC_MASK_SNM_THRESHOLD,
-							  BNO055_IRQ_ACC_SHIFT_SNM, val->val2);
+				err = bno055_set_attribut(
+					dev, BNO055_REGISTER_ACC_NO_MOTION_THRESHOLD,
+					BNO055_IRQ_ACC_MASK_THRESHOLD_MOTION_SLOWNO,
+					BNO055_IRQ_ACC_SHIFT_MOTION_SLOWNO, val->val2);
 				if (err < 0) {
 					return err;
 				}
-			} else if (val->val1 == BNO055_ACC_THRESHOLD_HG) {
+			} else if (val->val1 == BNO055_ACC_THRESHOLD_HIGH_G) {
 				LOG_DBG("ACC ATTR HG THRESHOLD");
 				err = bno055_set_attribut(
 					dev, BNO055_REGISTER_ACC_HIGH_GRAVITY_THRESHOLD,
-					BNO055_IRQ_ACC_MASK_HG_THRESHOLD, BNO055_IRQ_ACC_NO_SHIFT,
-					val->val2);
+					BNO055_IRQ_ACC_MASK_THRESHOLD_HIGH_G,
+					BNO055_IRQ_ACC_NO_SHIFT, val->val2);
 				if (err < 0) {
 					return err;
 				}
@@ -570,33 +570,38 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 			break;
 
 		case SENSOR_ATTR_SLOPE_DUR:
-			if (val->val1 == BNO055_ACC_DURATION_AM) {
+			if (val->val1 == BNO055_ACC_DURATION_MOTION_ANY) {
 				LOG_DBG("ACC ATTR AM DURATION");
 				err = bno055_set_attribut(dev, BNO055_REGISTER_ACC_INT_SETTINGS,
-							  BNO055_IRQ_ACC_MASK_AM_DURATION,
-							  BNO055_IRQ_ACC_SHIFT_AM, val->val2);
+							  BNO055_IRQ_ACC_MASK_DUR_MOTION_ANY,
+							  BNO055_IRQ_ACC_SHIFT_MOTION_ANY,
+							  val->val2);
 				if (err < 0) {
 					return err;
 				}
-			} else if (val->val1 == BNO055_ACC_DURATION_NM) {
+			} else if (val->val1 == BNO055_ACC_DURATION_MOTION_NO) {
 				LOG_DBG("ACC ATTR NM DURATION");
-				uint8_t snm = (val->val2 >> BNO055_IRQ_ACC_SNM_SHIFT);
-				uint32_t duration = val->val2 & (~BNO055_IRQ_ACC_SN_MOTION_NO);
-				uint8_t value = duration & (BNO055_IRQ_ACC_MASK_SLOW_DURATION >>
-							    BNO055_IRQ_ACC_SHIFT_SNM);
+				uint8_t snm = (val->val2 >> BNO055_IRQ_ACC_SHIFT_MOTION_SLOWNO);
+				uint32_t duration = val->val2 & (~BNO055_IRQ_ACC_SET_MOTION_NO);
+				uint8_t value = duration & (BNO055_IRQ_ACC_MASK_DUR_MOTION_SLOW >>
+							    BNO055_IRQ_ACC_MASK_DUR_MOTION_SLOW);
 
-				if (snm == BNO055_IRQ_ACC_SN_MOTION_NO) {
-					value = (duration > BNO055_ACC_SN_DURATION_80_SECONDS)
+				if (snm == BNO055_IRQ_ACC_SET_MOTION_NO) {
+					value = (duration >
+						 BNO055_ACC_DURATION_MOTION_SLOWNO_80_SECONDS)
 							? (0x01 << 5)
 							: 0x00;
-					if (duration > BNO055_ACC_SN_DURATION_80_SECONDS) {
+					if (duration >
+					    BNO055_ACC_DURATION_MOTION_SLOWNO_80_SECONDS) {
 						value |= ((duration - 88) >> 3);
 					} else {
-						value |= (duration >
-							  BNO055_ACC_SN_DURATION_20_SECONDS)
-								 ? (0x01 << 4)
-								 : 0x00;
-						if (duration > BNO055_ACC_SN_DURATION_20_SECONDS) {
+						value |=
+							(duration >
+							 BNO055_ACC_DURATION_MOTION_SLOWNO_20_SECONDS)
+								? (0x01 << 4)
+								: 0x00;
+						if (duration >
+						    BNO055_ACC_DURATION_MOTION_SLOWNO_20_SECONDS) {
 							value |= ((duration - 20) >> 2);
 						} else {
 							value |= ((duration - 1) >> 0);
@@ -606,24 +611,24 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 
 				err = bno055_set_attribut(
 					dev, BNO055_REGISTER_ACC_NO_MOTION_SET,
-					(snm == BNO055_IRQ_ACC_SN_MOTION_NO)
-						? BNO055_IRQ_ACC_MASK_SNM_DURATION
-						: BNO055_IRQ_ACC_MASK_SLOW_DURATION,
-					BNO055_IRQ_ACC_SHIFT_SNM, value);
+					(snm == BNO055_IRQ_ACC_SET_MOTION_NO)
+						? BNO055_IRQ_ACC_MASK_DUR_MOTION_SLOWNO
+						: BNO055_IRQ_ACC_MASK_DUR_MOTION_SLOW,
+					BNO055_IRQ_ACC_SHIFT_MOTION_SLOWNO, value);
 				if (err < 0) {
 					return err;
 				}
 				err = bno055_set_attribut(dev, BNO055_REGISTER_ACC_NO_MOTION_SET,
-							  BNO055_IRQ_ACC_MASK_SNM_SET,
+							  BNO055_IRQ_ACC_MASK_SET_MOTION_SLOWNO,
 							  BNO055_IRQ_ACC_NO_SHIFT, snm);
 				if (err < 0) {
 					return err;
 				}
-			} else if (val->val1 == BNO055_ACC_DURATION_HG) {
+			} else if (val->val1 == BNO055_ACC_DURATION_HIGH_G) {
 				LOG_DBG("ACC ATTR HG DURATION");
 				err = bno055_set_attribut(dev,
 							  BNO055_REGISTER_ACC_HIGH_GRAVITY_DURATION,
-							  BNO055_IRQ_ACC_MASK_HG_DURATION,
+							  BNO055_IRQ_ACC_MASK_DUR_HIGH_G,
 							  BNO055_IRQ_ACC_NO_SHIFT, val->val2);
 				if (err < 0) {
 					return err;
@@ -644,8 +649,9 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 		case SENSOR_ATTR_SLOPE_TH:
 			LOG_DBG("GYRO ATTR AM THRESHOLD");
 			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_AM_THRESHOLD,
-						  BNO055_IRQ_GYR_MASK_AM_THRESHOLD,
-						  BNO055_IRQ_GYR_SHIFT_AM_THRESHOLD, val->val1);
+						  BNO055_IRQ_GYR_MASK_THRESHOLD_MOTION_ANY,
+						  BNO055_IRQ_GYR_SHIFT_THRESHOLD_MOTION_ANY,
+						  val->val1);
 			if (err < 0) {
 				return err;
 			}
@@ -654,15 +660,16 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 		case SENSOR_ATTR_SLOPE_DUR:
 			LOG_DBG("GYRO ATTR AM DURATION");
 			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_AM_SET,
-						  BNO055_IRQ_GYR_MASK_AM_AWAKE_DURATION,
-						  BNO055_IRQ_GYR_SHIFT_AM_AWAKE_DURATION,
+						  BNO055_IRQ_GYR_MASK_AWAKE_DURATION_MOTION_ANY,
+						  BNO055_IRQ_GYR_SHIFT_AWAKE_DURATION_MOTION_ANY,
 						  val->val1);
 			if (err < 0) {
 				return err;
 			}
 			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_AM_SET,
-						  BNO055_IRQ_GYR_MASK_AM_SAMPLES,
-						  BNO055_IRQ_GYR_SHIFT_AM_SAMPLES, val->val1);
+						  BNO055_IRQ_GYR_MASK_SAMPLES_MOTION_ANY,
+						  BNO055_IRQ_GYR_SHIFT_SAMPLES_MOTION_ANY,
+						  val->val1);
 			if (err < 0) {
 				return err;
 			}
@@ -671,14 +678,14 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 		case SENSOR_ATTR_FEATURE_MASK:
 			LOG_DBG("GYRO ATTR FEATURE");
 			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_INT_SETTINGS,
-						  BNO055_IRQ_GYR_SETTINGS_HR_FILT,
-						  BNO055_IRQ_GYR_SHIFT_HR_FILT, val->val1);
+						  BNO055_IRQ_GYR_SETTINGS_FILT_HIGH_RATE,
+						  BNO055_IRQ_GYR_SHIFT_FILT_HIGH_RATE, val->val1);
 			if (err < 0) {
 				return err;
 			}
 			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_INT_SETTINGS,
-						  BNO055_IRQ_GYR_SETTINGS_AM_FILT,
-						  BNO055_IRQ_GYR_SHIFT_AM_FILT, val->val2);
+						  BNO055_IRQ_GYR_SETTINGS_FILT_MOTION_ANY,
+						  BNO055_IRQ_GYR_SHIFT_FILT_MOTION_ANY, val->val2);
 			if (err < 0) {
 				return err;
 			}
@@ -693,20 +700,22 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 		switch (attr) {
 		case SENSOR_ATTR_HYSTERESIS:
 			LOG_DBG("GYRO_X ATTR HR THRESHOLD");
-			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_HIGH_RATE_X_SET,
-						  BNO055_IRQ_GYR_MASK_AM_THRESHOLD,
-						  BNO055_IRQ_GYR_SHIFT_AM_THRESHOLD,
-						  val->val1 & (BNO055_IRQ_GYR_MASK_AM_THRESHOLD >>
-							       BNO055_IRQ_GYR_SHIFT_AM_THRESHOLD));
+			err = bno055_set_attribut(
+				dev, BNO055_REGISTER_GYR_HIGH_RATE_X_SET,
+				BNO055_IRQ_GYR_MASK_THRESHOLD_MOTION_ANY,
+				BNO055_IRQ_GYR_SHIFT_THRESHOLD_MOTION_ANY,
+				val->val1 & (BNO055_IRQ_GYR_MASK_THRESHOLD_MOTION_ANY >>
+					     BNO055_IRQ_GYR_SHIFT_THRESHOLD_MOTION_ANY));
 			if (err < 0) {
 				return err;
 			}
 			LOG_DBG("GYRO_X ATTR HR HYSTERESIS");
-			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_HIGH_RATE_X_SET,
-						  BNO055_IRQ_GYR_MASK_HR_HYSTERESIS,
-						  BNO055_IRQ_GYR_SHIFT_HR_HYSTERESIS,
-						  val->val2 & (BNO055_IRQ_GYR_MASK_HR_HYSTERESIS >>
-							       BNO055_IRQ_GYR_SHIFT_HR_HYSTERESIS));
+			err = bno055_set_attribut(
+				dev, BNO055_REGISTER_GYR_HIGH_RATE_X_SET,
+				BNO055_IRQ_GYR_MASK_HYSTERESIS_HIGH_RATE,
+				BNO055_IRQ_GYR_SHIFT_HYSTERESIS_HIGH_RATE,
+				val->val2 & (BNO055_IRQ_GYR_MASK_HYSTERESIS_HIGH_RATE >>
+					     BNO055_IRQ_GYR_SHIFT_HYSTERESIS_HIGH_RATE));
 			if (err < 0) {
 				return err;
 			}
@@ -715,7 +724,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 		case SENSOR_ATTR_SLOPE_DUR:
 			LOG_DBG("GYRO_X ATTR HR DURATION");
 			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_DURATION_X,
-						  BNO055_IRQ_GYR_MASK_HR_DURATION,
+						  BNO055_IRQ_GYR_MASK_DURATION_HIGH_RATE,
 						  BNO055_IRQ_GYR_NO_SHIFT, val->val1);
 			if (err < 0) {
 				return err;
@@ -732,20 +741,22 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 		switch (attr) {
 		case SENSOR_ATTR_HYSTERESIS:
 			LOG_DBG("GYRO_Y ATTR HR THRESHOLD");
-			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_HIGH_RATE_Y_SET,
-						  BNO055_IRQ_GYR_MASK_AM_THRESHOLD,
-						  BNO055_IRQ_GYR_SHIFT_AM_THRESHOLD,
-						  val->val1 & (BNO055_IRQ_GYR_MASK_AM_THRESHOLD >>
-							       BNO055_IRQ_GYR_SHIFT_AM_THRESHOLD));
+			err = bno055_set_attribut(
+				dev, BNO055_REGISTER_GYR_HIGH_RATE_Y_SET,
+				BNO055_IRQ_GYR_MASK_THRESHOLD_MOTION_ANY,
+				BNO055_IRQ_GYR_SHIFT_THRESHOLD_MOTION_ANY,
+				val->val1 & (BNO055_IRQ_GYR_MASK_THRESHOLD_MOTION_ANY >>
+					     BNO055_IRQ_GYR_SHIFT_THRESHOLD_MOTION_ANY));
 			if (err < 0) {
 				return err;
 			}
 			LOG_DBG("GYRO_Y ATTR HR HYSTERESIS");
-			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_HIGH_RATE_Y_SET,
-						  BNO055_IRQ_GYR_MASK_HR_HYSTERESIS,
-						  BNO055_IRQ_GYR_SHIFT_HR_HYSTERESIS,
-						  val->val2 & (BNO055_IRQ_GYR_MASK_HR_HYSTERESIS >>
-							       BNO055_IRQ_GYR_SHIFT_HR_HYSTERESIS));
+			err = bno055_set_attribut(
+				dev, BNO055_REGISTER_GYR_HIGH_RATE_Y_SET,
+				BNO055_IRQ_GYR_MASK_HYSTERESIS_HIGH_RATE,
+				BNO055_IRQ_GYR_SHIFT_HYSTERESIS_HIGH_RATE,
+				val->val2 & (BNO055_IRQ_GYR_MASK_HYSTERESIS_HIGH_RATE >>
+					     BNO055_IRQ_GYR_SHIFT_HYSTERESIS_HIGH_RATE));
 			if (err < 0) {
 				return err;
 			}
@@ -754,7 +765,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 		case SENSOR_ATTR_SLOPE_DUR:
 			LOG_DBG("GYRO_Y ATTR HR DURATION");
 			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_DURATION_Y,
-						  BNO055_IRQ_GYR_MASK_HR_DURATION,
+						  BNO055_IRQ_GYR_MASK_DURATION_HIGH_RATE,
 						  BNO055_IRQ_GYR_NO_SHIFT, val->val1);
 			if (err < 0) {
 				return err;
@@ -771,20 +782,22 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 		switch (attr) {
 		case SENSOR_ATTR_HYSTERESIS:
 			LOG_DBG("GYRO_Z ATTR HR THRESHOLD");
-			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_HIGH_RATE_Z_SET,
-						  BNO055_IRQ_GYR_MASK_AM_THRESHOLD,
-						  BNO055_IRQ_GYR_SHIFT_AM_THRESHOLD,
-						  val->val1 & (BNO055_IRQ_GYR_MASK_AM_THRESHOLD >>
-							       BNO055_IRQ_GYR_SHIFT_AM_THRESHOLD));
+			err = bno055_set_attribut(
+				dev, BNO055_REGISTER_GYR_HIGH_RATE_Z_SET,
+				BNO055_IRQ_GYR_MASK_THRESHOLD_MOTION_ANY,
+				BNO055_IRQ_GYR_SHIFT_THRESHOLD_MOTION_ANY,
+				val->val1 & (BNO055_IRQ_GYR_MASK_THRESHOLD_MOTION_ANY >>
+					     BNO055_IRQ_GYR_SHIFT_THRESHOLD_MOTION_ANY));
 			if (err < 0) {
 				return err;
 			}
 			LOG_DBG("GYRO_Z ATTR HR HYSTERESIS");
-			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_HIGH_RATE_Z_SET,
-						  BNO055_IRQ_GYR_MASK_HR_HYSTERESIS,
-						  BNO055_IRQ_GYR_SHIFT_HR_HYSTERESIS,
-						  val->val2 & (BNO055_IRQ_GYR_MASK_HR_HYSTERESIS >>
-							       BNO055_IRQ_GYR_SHIFT_HR_HYSTERESIS));
+			err = bno055_set_attribut(
+				dev, BNO055_REGISTER_GYR_HIGH_RATE_Z_SET,
+				BNO055_IRQ_GYR_MASK_HYSTERESIS_HIGH_RATE,
+				BNO055_IRQ_GYR_SHIFT_HYSTERESIS_HIGH_RATE,
+				val->val2 & (BNO055_IRQ_GYR_MASK_HYSTERESIS_HIGH_RATE >>
+					     BNO055_IRQ_GYR_SHIFT_HYSTERESIS_HIGH_RATE));
 			if (err < 0) {
 				return err;
 			}
@@ -793,7 +806,7 @@ static int bno055_attr_set(const struct device *dev, enum sensor_channel chan,
 		case SENSOR_ATTR_SLOPE_DUR:
 			LOG_DBG("GYRO_Z ATTR HR DURATION");
 			err = bno055_set_attribut(dev, BNO055_REGISTER_GYR_DURATION_Z,
-						  BNO055_IRQ_GYR_MASK_HR_DURATION,
+						  BNO055_IRQ_GYR_MASK_DURATION_HIGH_RATE,
 						  BNO055_IRQ_GYR_NO_SHIFT, val->val1);
 			if (err < 0) {
 				return err;
@@ -1372,11 +1385,11 @@ static void bno055_work_cb(struct k_work *p_work)
 		}
 	}
 
-	if (reg & BNO055_IRQ_MASK_GYR_AM) {
-		if (data->trigger_handler[BNO055_IRQ_GYR_AM]) {
+	if (reg & BNO055_IRQ_MASK_GYR_MOTION_ANY) {
+		if (data->trigger_handler[BNO055_IRQ_GYR_MOTION_ANY]) {
 			LOG_DBG("Calling GYR_AM callback");
-			data->trigger_handler[BNO055_IRQ_GYR_AM](data->dev,
-								 data->trigger[BNO055_IRQ_GYR_AM]);
+			data->trigger_handler[BNO055_IRQ_GYR_MOTION_ANY](
+				data->dev, data->trigger[BNO055_IRQ_GYR_MOTION_ANY]);
 		}
 	}
 
@@ -1404,19 +1417,19 @@ static void bno055_work_cb(struct k_work *p_work)
 		}
 	}
 
-	if (reg & BNO055_IRQ_MASK_ACC_AM) {
-		if (data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION]) {
+	if (reg & BNO055_IRQ_MASK_ACC_MOTION_ANY) {
+		if (data->trigger_handler[BNO055_IRQ_ACC_MOTION_ANYNO]) {
 			LOG_DBG("Calling ACC_AM callback");
-			data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION](
-				data->dev, data->trigger[BNO055_IRQ_ACC_AN_MOTION]);
+			data->trigger_handler[BNO055_IRQ_ACC_MOTION_ANYNO](
+				data->dev, data->trigger[BNO055_IRQ_ACC_MOTION_ANYNO]);
 		}
 	}
 
-	if (reg & BNO055_IRQ_MASK_ACC_NM) {
-		if (data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION]) {
+	if (reg & BNO055_IRQ_MASK_ACC_MOTION_NO) {
+		if (data->trigger_handler[BNO055_IRQ_ACC_MOTION_ANYNO]) {
 			LOG_DBG("Calling ACC_NM callback");
-			data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION](
-				data->dev, data->trigger[BNO055_IRQ_ACC_AN_MOTION]);
+			data->trigger_handler[BNO055_IRQ_ACC_MOTION_ANYNO](
+				data->dev, data->trigger[BNO055_IRQ_ACC_MOTION_ANYNO]);
 		}
 	}
 
@@ -1461,18 +1474,18 @@ static int bno055_trigger_configuation(const struct device *dev, const struct se
 		if ((trig->chan == SENSOR_CHAN_ACCEL_XYZ) || (trig->chan == SENSOR_CHAN_ACCEL_X) ||
 		    (trig->chan == SENSOR_CHAN_ACCEL_Y) || (trig->chan == SENSOR_CHAN_ACCEL_Z)) {
 			i2c_reg = BNO055_REGISTER_ACC_INT_SETTINGS;
-			reg_mask = BNO055_IRQ_ACC_MASK_AN_MOTION_AXIS;
+			reg_mask = BNO055_IRQ_ACC_MASK_AXIS_MOTION_ANYNO;
 			if (trig->type == (enum sensor_trigger_type)BNO055_SENSOR_TRIG_HIGH_G) {
-				reg_mask = BNO055_IRQ_ACC_MASK_HG_AXIS;
+				reg_mask = BNO055_IRQ_ACC_MASK_AXIS_HIGH_G;
 			}
 		} else if ((trig->chan == SENSOR_CHAN_GYRO_XYZ) ||
 			   (trig->chan == SENSOR_CHAN_GYRO_X) ||
 			   (trig->chan == SENSOR_CHAN_GYRO_Y) ||
 			   (trig->chan == SENSOR_CHAN_GYRO_Z)) {
 			i2c_reg = BNO055_REGISTER_GYR_INT_SETTINGS;
-			reg_mask = BNO055_IRQ_GYR_MASK_AN_MOTION_AXIS;
+			reg_mask = BNO055_IRQ_GYR_MASK_AXIS_MOTION_ANYNO;
 			if (trig->type == (enum sensor_trigger_type)BNO055_SENSOR_TRIG_HIGH_RATE) {
-				reg_mask = BNO055_IRQ_GYR_MASK_HR_AXIS;
+				reg_mask = BNO055_IRQ_GYR_MASK_AXIS_HIGH_RATE;
 			}
 		}
 
@@ -1502,10 +1515,10 @@ static int bno055_trigger_configuation(const struct device *dev, const struct se
 	if (enable) {
 		LOG_DBG("TRIGGER %d Enable!!", irq);
 		reg[0] |= irq;
-		if (irq & BNO055_IRQ_MASK_ACC_AM) {
-			reg[1] &= ~BNO055_IRQ_MASK_ACC_NM;
-		} else if (irq & BNO055_IRQ_MASK_ACC_NM) {
-			reg[1] &= ~BNO055_IRQ_MASK_ACC_AM;
+		if (irq & BNO055_IRQ_MASK_ACC_MOTION_ANY) {
+			reg[1] &= ~BNO055_IRQ_MASK_ACC_MOTION_NO;
+		} else if (irq & BNO055_IRQ_MASK_ACC_MOTION_NO) {
+			reg[1] &= ~BNO055_IRQ_MASK_ACC_MOTION_ANY;
 		}
 		reg[1] |= irq;
 		LOG_DBG("TARGET[%d][%d]", reg[0], reg[1]);
@@ -1589,47 +1602,47 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 	if ((trig->type == SENSOR_TRIG_DELTA) && BNO055_IS_GYRO_CHANNEL(trig->chan)) {
 		if (trig->chan == SENSOR_CHAN_GYRO_XYZ) {
 			LOG_DBG("TRIGGER SET GYR_XYZ DELTA");
-			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_AM,
-							  BNO055_IRQ_GYR_MASK_AN_MOTION_AXIS,
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_MOTION_ANY,
+							  BNO055_IRQ_GYR_MASK_AXIS_MOTION_ANYNO,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
 			}
 		} else if (trig->chan == SENSOR_CHAN_GYRO_X) {
 			LOG_DBG("TRIGGER SET GYR_X DELTA");
-			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_AM,
-							  BNO055_IRQ_GYR_SETTINGS_AN_MOTION_X,
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_MOTION_ANY,
+							  BNO055_IRQ_GYR_SETTINGS_X_MOTION_ANYNO,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
 			}
 		} else if (trig->chan == SENSOR_CHAN_GYRO_Y) {
 			LOG_DBG("TRIGGER SET GYR_Y DELTA");
-			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_AM,
-							  BNO055_IRQ_GYR_SETTINGS_AN_MOTION_Y,
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_MOTION_ANY,
+							  BNO055_IRQ_GYR_SETTINGS_Y_MOTION_ANYNO,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
 			}
 		} else if (trig->chan == SENSOR_CHAN_GYRO_Z) {
 			LOG_DBG("TRIGGER SET GYR_Z DELTA");
-			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_AM,
-							  BNO055_IRQ_GYR_SETTINGS_AN_MOTION_Z,
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_MOTION_ANY,
+							  BNO055_IRQ_GYR_SETTINGS_Z_MOTION_ANYNO,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
 			}
 		}
 
-		data->trigger_handler[BNO055_IRQ_GYR_AM] = handler;
-		data->trigger[BNO055_IRQ_GYR_AM] = (handler != NULL) ? trig : NULL;
+		data->trigger_handler[BNO055_IRQ_GYR_MOTION_ANY] = handler;
+		data->trigger[BNO055_IRQ_GYR_MOTION_ANY] = (handler != NULL) ? trig : NULL;
 		return 0;
 	}
 
 	if ((trig->type == SENSOR_TRIG_DELTA) && BNO055_IS_ACCEL_CHANNEL(trig->chan)) {
 		LOG_DBG("TRIGGER SET ACC DELTA");
-		if ((data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION] != NULL) &&
-		    (data->trigger[BNO055_IRQ_ACC_AN_MOTION] != NULL) && (handler != NULL)) {
+		if ((data->trigger_handler[BNO055_IRQ_ACC_MOTION_ANYNO] != NULL) &&
+		    (data->trigger[BNO055_IRQ_ACC_MOTION_ANYNO] != NULL) && (handler != NULL)) {
 			LOG_ERR("Any/No Motion trigger already affected!!");
 			LOG_ERR("Clear the trigger with NULL callback to setup a new trigger!!");
 			return -ENOTSUP;
@@ -1637,47 +1650,47 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 
 		if ((trig->chan == SENSOR_CHAN_ACCEL_XYZ)) {
 			LOG_DBG("TRIGGER SET ACC_XYZ DELTA");
-			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_AM,
-							  BNO055_IRQ_ACC_MASK_AN_MOTION_AXIS,
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_MOTION_ANY,
+							  BNO055_IRQ_ACC_MASK_AXIS_MOTION_ANYNO,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
 			}
 		} else if ((trig->chan == SENSOR_CHAN_ACCEL_X)) {
 			LOG_DBG("TRIGGER SET ACC_X DELTA");
-			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_AM,
-							  BNO055_IRQ_ACC_SETTINGS_AN_MOTION_X,
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_MOTION_ANY,
+							  BNO055_IRQ_ACC_SETTINGS_X_MOTION_ANYNO,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
 			}
 		} else if ((trig->chan == SENSOR_CHAN_ACCEL_Y)) {
 			LOG_DBG("TRIGGER SET ACC_Y DELTA");
-			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_AM,
-							  BNO055_IRQ_ACC_SETTINGS_AN_MOTION_Y,
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_MOTION_ANY,
+							  BNO055_IRQ_ACC_SETTINGS_Y_MOTION_ANYNO,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
 			}
 		} else if ((trig->chan == SENSOR_CHAN_ACCEL_Z)) {
 			LOG_DBG("TRIGGER SET ACC_Z DELTA");
-			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_AM,
-							  BNO055_IRQ_ACC_SETTINGS_AN_MOTION_Z,
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_MOTION_ANY,
+							  BNO055_IRQ_ACC_SETTINGS_Z_MOTION_ANYNO,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
 			}
 		}
 
-		data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION] = handler;
-		data->trigger[BNO055_IRQ_ACC_AN_MOTION] = (handler != NULL) ? trig : NULL;
+		data->trigger_handler[BNO055_IRQ_ACC_MOTION_ANYNO] = handler;
+		data->trigger[BNO055_IRQ_ACC_MOTION_ANYNO] = (handler != NULL) ? trig : NULL;
 		return 0;
 	}
 
 	if ((trig->type == SENSOR_TRIG_STATIONARY) && BNO055_IS_ACCEL_CHANNEL(trig->chan)) {
 		LOG_DBG("TRIGGER SET ACC NO MOTION");
-		if ((data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION] != NULL) &&
-		    (data->trigger[BNO055_IRQ_ACC_AN_MOTION] != NULL) && (handler != NULL)) {
+		if ((data->trigger_handler[BNO055_IRQ_ACC_MOTION_ANYNO] != NULL) &&
+		    (data->trigger[BNO055_IRQ_ACC_MOTION_ANYNO] != NULL) && (handler != NULL)) {
 			LOG_ERR("Any/No Motion trigger already affected!!");
 			LOG_ERR("Clear the trigger with NULL callback to setup a new trigger!!");
 			return -ENOTSUP;
@@ -1685,40 +1698,40 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 
 		if ((trig->chan == SENSOR_CHAN_ACCEL_XYZ)) {
 			LOG_DBG("TRIGGER SET ACC_XYZ NO MOTION");
-			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_NM,
-							  BNO055_IRQ_ACC_MASK_AN_MOTION_AXIS,
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_MOTION_NO,
+							  BNO055_IRQ_ACC_MASK_AXIS_MOTION_ANYNO,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
 			}
 		} else if ((trig->chan == SENSOR_CHAN_ACCEL_X)) {
 			LOG_DBG("TRIGGER SET ACC_X NO MOTION");
-			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_NM,
-							  BNO055_IRQ_ACC_SETTINGS_AN_MOTION_X,
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_MOTION_NO,
+							  BNO055_IRQ_ACC_SETTINGS_X_MOTION_ANYNO,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
 			}
 		} else if ((trig->chan == SENSOR_CHAN_ACCEL_Y)) {
 			LOG_DBG("TRIGGER SET ACC_Y NO MOTION");
-			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_NM,
-							  BNO055_IRQ_ACC_SETTINGS_AN_MOTION_Y,
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_MOTION_NO,
+							  BNO055_IRQ_ACC_SETTINGS_Y_MOTION_ANYNO,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
 			}
 		} else if ((trig->chan == SENSOR_CHAN_ACCEL_Z)) {
 			LOG_DBG("TRIGGER SET ACC_Z NO MOTION");
-			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_NM,
-							  BNO055_IRQ_ACC_SETTINGS_AN_MOTION_Z,
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_MOTION_NO,
+							  BNO055_IRQ_ACC_SETTINGS_Z_MOTION_ANYNO,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
 			}
 		}
 
-		data->trigger_handler[BNO055_IRQ_ACC_AN_MOTION] = handler;
-		data->trigger[BNO055_IRQ_ACC_AN_MOTION] = (handler != NULL) ? trig : NULL;
+		data->trigger_handler[BNO055_IRQ_ACC_MOTION_ANYNO] = handler;
+		data->trigger[BNO055_IRQ_ACC_MOTION_ANYNO] = (handler != NULL) ? trig : NULL;
 		return 0;
 	}
 
@@ -1727,7 +1740,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 		if ((trig->chan == SENSOR_CHAN_ACCEL_XYZ)) {
 			LOG_DBG("TRIGGER SET ACC_XYZ High G");
 			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_HIGH_G,
-							  BNO055_IRQ_ACC_MASK_HG_AXIS,
+							  BNO055_IRQ_ACC_MASK_AXIS_HIGH_G,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
@@ -1735,7 +1748,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 		} else if ((trig->chan == SENSOR_CHAN_ACCEL_X)) {
 			LOG_DBG("TRIGGER SET ACC_X High G");
 			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_HIGH_G,
-							  BNO055_IRQ_ACC_SETTINGS_HG_X,
+							  BNO055_IRQ_ACC_SETTINGS_X_HIGH_G,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
@@ -1743,7 +1756,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 		} else if ((trig->chan == SENSOR_CHAN_ACCEL_Y)) {
 			LOG_DBG("TRIGGER SET ACC_Y High G");
 			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_HIGH_G,
-							  BNO055_IRQ_ACC_SETTINGS_HG_Y,
+							  BNO055_IRQ_ACC_SETTINGS_Y_HIGH_G,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
@@ -1751,7 +1764,7 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 		} else if ((trig->chan == SENSOR_CHAN_ACCEL_Z)) {
 			LOG_DBG("TRIGGER SET ACC_Z High G");
 			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_ACC_HIGH_G,
-							  BNO055_IRQ_ACC_SETTINGS_HG_Z,
+							  BNO055_IRQ_ACC_SETTINGS_Z_HIGH_G,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
@@ -1765,40 +1778,34 @@ static int bno055_trigger_set(const struct device *dev, const struct sensor_trig
 
 	if ((trig->type == (enum sensor_trigger_type)BNO055_SENSOR_TRIG_HIGH_RATE) &&
 	    BNO055_IS_GYRO_CHANNEL(trig->chan)) {
-		err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_HIGH_RATE,
-						  BNO055_IRQ_MASK_GYR_HIGH_RATE, handler != NULL);
-		if (err < 0) {
-			return err;
-		}
-
 		if (trig->chan == SENSOR_CHAN_GYRO_XYZ) {
 			LOG_DBG("TRIGGER SET GYR_XYZ High RATE");
-			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_AM,
-							  BNO055_IRQ_GYR_MASK_HR_AXIS,
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_HIGH_RATE,
+							  BNO055_IRQ_GYR_MASK_AXIS_HIGH_RATE,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
 			}
 		} else if (trig->chan == SENSOR_CHAN_GYRO_X) {
 			LOG_DBG("TRIGGER SET GYR_X High RATE");
-			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_AM,
-							  BNO055_IRQ_GYR_SETTINGS_HR_X,
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_HIGH_RATE,
+							  BNO055_IRQ_GYR_SETTINGS_X_HIGH_RATE,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
 			}
 		} else if (trig->chan == SENSOR_CHAN_GYRO_Y) {
 			LOG_DBG("TRIGGER SET GYR_Y High RATE");
-			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_AM,
-							  BNO055_IRQ_GYR_SETTINGS_HR_Y,
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_HIGH_RATE,
+							  BNO055_IRQ_GYR_SETTINGS_Y_HIGH_RATE,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
 			}
 		} else if (trig->chan == SENSOR_CHAN_GYRO_Z) {
 			LOG_DBG("TRIGGER SET GYR_Z High RATE");
-			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_AM,
-							  BNO055_IRQ_GYR_SETTINGS_HR_Z,
+			err = bno055_trigger_configuation(dev, trig, BNO055_IRQ_MASK_GYR_HIGH_RATE,
+							  BNO055_IRQ_GYR_SETTINGS_Z_HIGH_RATE,
 							  handler != NULL);
 			if (err < 0) {
 				return err;
