@@ -10,12 +10,12 @@
 
 static const struct device *const bno055_dev = DEVICE_DT_GET(DT_NODELABEL(bno0550));
 static struct sensor_trigger trig_acc_drdy;
-static struct sensor_trigger trig_acc_asn;
-static struct sensor_trigger trig_acc_hg;
-static struct sensor_trigger trig_gyr_am;
-static struct sensor_trigger trig_gyr_hr;
+static struct sensor_trigger trig_acc_motion;
+static struct sensor_trigger trig_acc_high_g;
+static struct sensor_trigger trig_gyr_any_motion;
+static struct sensor_trigger trig_gyr_high_rate;
 
-static bool trigger_an_motion = false;
+static bool trigger_anyno_motion = true;
 static bool bno055_fusion = false;
 
 void acc_drdy(const struct device *dev, const struct sensor_trigger *trigger)
@@ -23,7 +23,7 @@ void acc_drdy(const struct device *dev, const struct sensor_trigger *trigger)
 	printk("BSX data ready!!\n");
 }
 
-void acc_asn(const struct device *dev, const struct sensor_trigger *trigger)
+void acc_motion(const struct device *dev, const struct sensor_trigger *trigger)
 {
 	if (trigger->type == SENSOR_TRIG_DELTA) {
 		printk("ACC any motion interrupt!!\n");
@@ -34,17 +34,17 @@ void acc_asn(const struct device *dev, const struct sensor_trigger *trigger)
 	}
 }
 
-void acc_hg(const struct device *dev, const struct sensor_trigger *trigger)
+void acc_high_g(const struct device *dev, const struct sensor_trigger *trigger)
 {
 	printk("ACC high G interrupt!!\n");
 }
 
-void gyr_am(const struct device *dev, const struct sensor_trigger *trigger)
+void gyr_any_motion(const struct device *dev, const struct sensor_trigger *trigger)
 {
 	printk("GYR any motion interrupt!!\n");
 }
 
-void gyr_hr(const struct device *dev, const struct sensor_trigger *trigger)
+void gyr_high_rate(const struct device *dev, const struct sensor_trigger *trigger)
 {
 	printk("GYR high RATE interrupt!!\n");
 }
@@ -74,47 +74,48 @@ int main(void)
 	trig_acc_drdy.chan = SENSOR_CHAN_ACCEL_XYZ;
 	sensor_trigger_set(bno055_dev, &trig_acc_drdy, acc_drdy);
 
-	if (trigger_an_motion) {
-		config.val1 = BNO055_ACC_DURATION_AM;
+	if (trigger_anyno_motion) {
+		config.val1 = BNO055_ACC_DURATION_MOTION_ANY;
 		config.val2 = 0x02; // Value
 		sensor_attr_set(bno055_dev, SENSOR_CHAN_ACCEL_XYZ, SENSOR_ATTR_SLOPE_DUR, &config);
-		config.val1 = BNO055_ACC_THRESHOLD_AM;
+		config.val1 = BNO055_ACC_THRESHOLD_MOTION_ANY;
 		config.val2 = 0x04; // Value
 		sensor_attr_set(bno055_dev, SENSOR_CHAN_ACCEL_XYZ, SENSOR_ATTR_SLOPE_TH, &config);
-		trig_acc_asn.type = SENSOR_TRIG_DELTA;
-		trig_acc_asn.chan = SENSOR_CHAN_ACCEL_XYZ;
-		sensor_trigger_set(bno055_dev, &trig_acc_asn, acc_asn);
+		trig_acc_motion.type = SENSOR_TRIG_DELTA;
+		trig_acc_motion.chan = SENSOR_CHAN_ACCEL_XYZ;
+		sensor_trigger_set(bno055_dev, &trig_acc_motion, acc_motion);
 	} else {
-		config.val1 = BNO055_ACC_DURATION_NM;
-		config.val2 = BNO055_IRQ_ACC_SN_MOTION_NO || BNO055_ACC_SN_DURATION_1_SECONDS;
+		config.val1 = BNO055_ACC_DURATION_MOTION_NO;
+		config.val2 =
+			BNO055_IRQ_ACC_SET_MOTION_NO || BNO055_ACC_DURATION_MOTION_SLOWNO_1_SECONDS;
 		sensor_attr_set(bno055_dev, SENSOR_CHAN_ACCEL_XYZ, SENSOR_ATTR_SLOPE_DUR, &config);
-		config.val1 = BNO055_ACC_THRESHOLD_NM;
+		config.val1 = BNO055_ACC_THRESHOLD_MOTION_NO;
 		config.val2 = 0x04; // Value
 		sensor_attr_set(bno055_dev, SENSOR_CHAN_ACCEL_XYZ, SENSOR_ATTR_SLOPE_TH, &config);
-		trig_acc_asn.type = SENSOR_TRIG_STATIONARY;
-		trig_acc_asn.chan = SENSOR_CHAN_ACCEL_XYZ;
-		sensor_trigger_set(bno055_dev, &trig_acc_asn, acc_asn);
+		trig_acc_motion.type = SENSOR_TRIG_STATIONARY;
+		trig_acc_motion.chan = SENSOR_CHAN_ACCEL_XYZ;
+		sensor_trigger_set(bno055_dev, &trig_acc_motion, acc_motion);
 	}
 
-	config.val1 = BNO055_ACC_DURATION_HG;
+	config.val1 = BNO055_ACC_DURATION_HIGH_G;
 	config.val2 = 0x7F; // Value (127 + 1) * 2 = 256 ms
 	sensor_attr_set(bno055_dev, SENSOR_CHAN_ACCEL_XYZ, SENSOR_ATTR_SLOPE_DUR, &config);
-	config.val1 = BNO055_ACC_THRESHOLD_HG;
+	config.val1 = BNO055_ACC_THRESHOLD_HIGH_G;
 	config.val2 = 0x48; // Value
 	sensor_attr_set(bno055_dev, SENSOR_CHAN_ACCEL_XYZ, SENSOR_ATTR_SLOPE_TH, &config);
-	trig_acc_hg.type = BNO055_SENSOR_TRIG_HIGH_G;
-	trig_acc_hg.chan = SENSOR_CHAN_ACCEL_XYZ;
-	sensor_trigger_set(bno055_dev, &trig_acc_hg, acc_hg);
+	trig_acc_high_g.type = BNO055_SENSOR_TRIG_HIGH_G;
+	trig_acc_high_g.chan = SENSOR_CHAN_ACCEL_XYZ;
+	sensor_trigger_set(bno055_dev, &trig_acc_high_g, acc_high_g);
 
 	config.val1 = 0x02; // Value
-	config.val2 = BNO055_GYR_AM_AWAKE_DURATION_8_SAMPLES;
+	config.val2 = BNO055_GYR_AWAKE_DURATION_MOTION_ANY_8_SAMPLES;
 	sensor_attr_set(bno055_dev, SENSOR_CHAN_GYRO_XYZ, SENSOR_ATTR_SLOPE_DUR, &config);
 	config.val1 = 0x08; // Value
 	config.val2 = 0;
 	sensor_attr_set(bno055_dev, SENSOR_CHAN_GYRO_XYZ, SENSOR_ATTR_SLOPE_TH, &config);
-	trig_gyr_am.type = SENSOR_TRIG_DELTA;
-	trig_gyr_am.chan = SENSOR_CHAN_GYRO_XYZ;
-	sensor_trigger_set(bno055_dev, &trig_gyr_am, gyr_am);
+	trig_gyr_any_motion.type = SENSOR_TRIG_DELTA;
+	trig_gyr_any_motion.chan = SENSOR_CHAN_GYRO_XYZ;
+	sensor_trigger_set(bno055_dev, &trig_gyr_any_motion, gyr_any_motion);
 
 	config.val1 = 0x0A; // Value
 	config.val2 = 0;
@@ -134,9 +135,9 @@ int main(void)
 	config.val1 = 0x01; // Threshold
 	config.val2 = 0x00; // Hysteresis
 	sensor_attr_set(bno055_dev, SENSOR_CHAN_GYRO_Z, SENSOR_ATTR_HYSTERESIS, &config);
-	trig_gyr_hr.type = BNO055_SENSOR_TRIG_HIGH_RATE;
-	trig_gyr_hr.chan = SENSOR_CHAN_GYRO_XYZ;
-	sensor_trigger_set(bno055_dev, &trig_gyr_hr, gyr_hr);
+	trig_gyr_high_rate.type = BNO055_SENSOR_TRIG_HIGH_RATE;
+	trig_gyr_high_rate.chan = SENSOR_CHAN_GYRO_XYZ;
+	sensor_trigger_set(bno055_dev, &trig_gyr_high_rate, gyr_high_rate);
 
 	config.val1 = BNO055_GYR_FILTER_OFF; // Deactive HR Filter
 	config.val2 = BNO055_GYR_FILTER_OFF; // Deactive AM Filter
