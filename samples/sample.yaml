@@ -1,0 +1,8 @@
+sample:
+  name: BNO055 IMU sensor sample
+tests:
+  sample.default:
+    tags: sensor
+    integration_platforms:
+      - zest_core_stm32l4a6rg
+    depends_on: i2c

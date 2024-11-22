@@ -1,0 +1,17 @@
+name: "Test driver"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  driver:
+    uses: catie-aq/zephyr_workflows/.github/workflows/driver.yml@main
+    with:
+      path: "samples"
+
+    secrets:
+      personal_access_token: ${{ secrets.CI_6TRON_ZEPHYR_RO }}
