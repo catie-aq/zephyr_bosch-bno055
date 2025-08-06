@@ -51,7 +51,7 @@ void gyr_high_rate(const struct device *dev, const struct sensor_trigger *trigge
 
 int main(void)
 {
-#if DEVICE_DT_DEFER(DT_NODELABEL(bno0550))
+#if Z_DEVICE_DT_FLAGS(DT_NODELABEL(bno0550)) & DEVICE_FLAG_INIT_DEFERRED
 	k_sleep(K_MSEC(BNO055_TIMING_STARTUP));
 	device_init(bno055_dev);
 #endif
