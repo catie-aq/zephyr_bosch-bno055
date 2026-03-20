@@ -17,7 +17,6 @@ LOG_MODULE_REGISTER(BNO055, CONFIG_SENSOR_LOG_LEVEL);
 struct bno055_config {
 	struct i2c_dt_spec i2c_bus;
 	bool use_xtal;
-	bool deferred;
 
 #if BNO055_USE_IRQ
 	const struct gpio_dt_spec irq_gpio;
@@ -1831,11 +1830,6 @@ static int bno055_init(const struct device *dev)
 		return -ENODEV;
 	}
 
-	LOG_INF("DEFERRED [%d]", config->deferred);
-	if (!config->deferred) {
-		k_sleep(K_MSEC(BNO055_TIMING_STARTUP));
-	}
-
 	LOG_INF("CONFIG");
 	LOG_INF("USE XTAL [%d]", config->use_xtal);
 	int err;
@@ -1956,8 +1950,6 @@ static const struct sensor_driver_api bno055_driver_api = {
 		.use_xtal = DT_INST_PROP(n, use_xtal),                                             \
 		IF_ENABLED(BNO055_USE_IRQ,                                                         \
 			   (.irq_gpio = GPIO_DT_SPEC_INST_GET_OR(n, irq_gpios, {0}))),             \
-		IF_ENABLED(DT_ANY_INST_HAS_PROP_STATUS_OKAY(zephyr_deferred_init),                 \
-			   (.deferred = DT_INST_PROP(n, zephyr_deferred_init))),                   \
 	};                                                                                         \
 	static struct bno055_data bno055_data_##n;                                                 \
 	DEVICE_DT_INST_DEFINE(n, bno055_init, NULL, &bno055_data_##n, &bno055_config_##n,          \

@@ -245,7 +245,6 @@ enum bno055_sensor_attribute {
 #define BNO055_COMMAND_XTAL  0x80
 
 /* Timings */
-#define BNO055_TIMING_STARTUP            400 // 400ms
 #define BNO055_TIMING_RESET_CONFIG       650 // 650ms
 #define BNO055_TIMING_SWITCH_FROM_CONFIG 10  // 7 ms
 #define BNO055_TIMING_SWITCH_FROM_ANY    20  // 19 ms

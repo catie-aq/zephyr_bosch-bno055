@@ -8,6 +8,8 @@
 #include <zephyr/drivers/sensor.h>
 #include <bno055.h> // Required for custom SENSOR_CHAN_*
 
+#define BNO055_TIMING_STARTUP 400 // 400ms
+
 static const struct device *const bno055_dev = DEVICE_DT_GET(DT_NODELABEL(bno0550));
 static struct sensor_trigger trig_acc_drdy;
 static struct sensor_trigger trig_acc_motion;
