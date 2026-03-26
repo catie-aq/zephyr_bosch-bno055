@@ -1942,6 +1942,10 @@ static const struct sensor_driver_api bno055_driver_api = {
 #if BNO055_USE_IRQ
 	.trigger_set = bno055_trigger_set,
 #endif
+#ifdef CONFIG_SENSOR_ASYNC_API
+	.submit = bno055_submit,
+	.get_decoder = bno055_get_decoder,
+#endif
 };
 
 #define BNO055_INIT(n)                                                                             \
