@@ -144,7 +144,7 @@ int main(void)
 	sensor_attr_set(bno055_dev, SENSOR_CHAN_GYRO_XYZ, SENSOR_ATTR_FEATURE_MASK, &config);
 
 	while (1) {
-		sensor_sample_fetch(bno055_dev);
+		sensor_sample_fetch_chan(bno055_dev, BNO055_MODE_ACC_ONLY);
 
 		// Example for Linear Acceleration and Gravity
 		if (!bno055_fusion) {

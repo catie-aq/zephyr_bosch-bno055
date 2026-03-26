@@ -835,7 +835,7 @@ static int bno055_sample_fetch(const struct device *dev, enum sensor_channel cha
 		return err;
 	}
 
-	switch (data->mode) {
+	switch (chan) {
 	case BNO055_MODE_CONFIG:
 		LOG_WRN("CONFIG Mode no sample");
 		break;
