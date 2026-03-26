@@ -508,20 +508,6 @@ enum bno055_OperatingMode {
 };
 
 /* Data structures */
-struct bno055_offset_data {
-	int16_t acc_x;
-	int16_t acc_y;
-	int16_t acc_z;
-	int16_t mag_x;
-	int16_t mag_y;
-	int16_t mag_z;
-	int16_t gyr_x;
-	int16_t gyr_y;
-	int16_t gyr_z;
-	int16_t acc_radius;
-	int16_t mag_radius;
-};
-
 struct bno055_vector3_data {
 	int16_t x;
 	int16_t y;
