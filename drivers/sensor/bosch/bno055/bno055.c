@@ -1941,7 +1941,7 @@ static int bno055_init(const struct device *dev)
 	return 0;
 }
 
-static const struct sensor_driver_api bno055_driver_api = {
+static DEVICE_API(sensor, bno055_driver_api) = {
 	.attr_set = bno055_attr_set,
 	.sample_fetch = bno055_sample_fetch,
 	.channel_get = bno055_channel_get,
